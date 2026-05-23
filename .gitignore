@@ -1,0 +1,24 @@
+# macOS
+.DS_Store
+
+# IntelliJ IDEA
+.idea/
+*.iml
+out/
+
+# Gradle
+.gradle/
+build/
+bin/
+
+# IntelliJ Platform Gradle Plugin
+.intellijPlatform/
+
+# Generated site artifacts
+site/
+
+# Local secrets used by signing / publishing
+.env
+*.pem
+*.p12
+*.jks
