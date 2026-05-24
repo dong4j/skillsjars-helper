@@ -23,6 +23,7 @@ import java.util.Objects;
  *   <li>{@link #jarEntryRoot}: Skill 在 Jar 内的根路径 (以 {@code /} 结尾), 例如 {@code META-INF/skills/dev/dong4j/code-review/}.</li>
  *   <li>{@link #skillMdPath}: {@code SKILL.md} 在 Jar 内的完整路径.</li>
  *   <li>{@link #body}: SKILL.md 去掉 frontmatter 之后的正文, 用于预览展示.</li>
+ *   <li>{@link #files}: skill 根目录下所有文件清单 (含 SKILL.md 自身), 导出阶段直接消费, 避免再次打开 jar.</li>
  * </ul>
  *
  * @author dong4j
@@ -59,16 +60,12 @@ public final class SkillDescriptor {
     @NotNull
     private final String body;
 
+    /** Skill 根目录下所有文件清单 (含 SKILL.md 自身), 路径相对 jarEntryRoot. */
+    @NotNull
+    private final List<SkillFileEntry> files;
+
     /**
-     * 构造 Skill 描述符.
-     *
-     * @param name         Skill 名称
-     * @param description  描述
-     * @param allowedTools allowed-tools 列表
-     * @param license      许可证
-     * @param jarEntryRoot Jar 内根目录
-     * @param skillMdPath  SKILL.md 完整路径
-     * @param body         正文
+     * 构造 Skill 描述符 (files 默认空列表, 兼容旧调用).
      */
     public SkillDescriptor(@NotNull String name,
                            @Nullable String description,
@@ -77,6 +74,29 @@ public final class SkillDescriptor {
                            @NotNull String jarEntryRoot,
                            @NotNull String skillMdPath,
                            @NotNull String body) {
+        this(name, description, allowedTools, license, jarEntryRoot, skillMdPath, body, List.of());
+    }
+
+    /**
+     * 构造 Skill 描述符 (含文件清单).
+     *
+     * @param name         Skill 名称
+     * @param description  描述
+     * @param allowedTools allowed-tools 列表
+     * @param license      许可证
+     * @param jarEntryRoot Jar 内根目录
+     * @param skillMdPath  SKILL.md 完整路径
+     * @param body         正文
+     * @param files        skill 根目录下所有文件清单
+     */
+    public SkillDescriptor(@NotNull String name,
+                           @Nullable String description,
+                           @NotNull List<String> allowedTools,
+                           @Nullable String license,
+                           @NotNull String jarEntryRoot,
+                           @NotNull String skillMdPath,
+                           @NotNull String body,
+                           @NotNull List<SkillFileEntry> files) {
         this.name = name;
         this.description = description;
         this.allowedTools = List.copyOf(allowedTools);
@@ -84,6 +104,7 @@ public final class SkillDescriptor {
         this.jarEntryRoot = jarEntryRoot;
         this.skillMdPath = skillMdPath;
         this.body = body;
+        this.files = List.copyOf(files);
     }
 
     @NotNull
@@ -119,6 +140,14 @@ public final class SkillDescriptor {
     @NotNull
     public String getBody() {
         return this.body;
+    }
+
+    /**
+     * 获取 skill 根目录下所有文件清单 (含 SKILL.md 自身).
+     */
+    @NotNull
+    public List<SkillFileEntry> getFiles() {
+        return Collections.unmodifiableList(this.files);
     }
 
     @Override
