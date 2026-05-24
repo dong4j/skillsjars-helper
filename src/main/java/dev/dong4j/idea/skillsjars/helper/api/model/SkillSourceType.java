@@ -13,7 +13,7 @@ package dev.dong4j.idea.skillsjars.helper.api.model;
  * <ul>
  *   <li>{@link #MAVEN_DEPENDENCY}: 项目 {@code <dependencies>} 中的 Jar (一期主目标).</li>
  *   <li>{@link #MAVEN_PLUGIN_DEPENDENCY}: {@code skillsjars-maven-plugin} 的 {@code <dependencies>} (一期重要补充).</li>
- *   <li>{@link #GRADLE_DEPENDENCY}: Gradle {@code dependencies} 块, 占位项, 二期实现.</li>
+ *   <li>{@link #GRADLE_DEPENDENCY}: Gradle {@code dependencies} 块, 占位项, 三期接入 (详见 docs/phase3-publish.md).</li>
  *   <li>{@link #PROJECT_OUTPUT}: 当前模块产物中的 Skill, 暂未支持.</li>
  *   <li>{@link #EXTERNAL_LIBRARY}: IDEA External Libraries 中的非 Maven/Gradle 来源.</li>
  *   <li>{@link #LOCAL_JAR}: 用户手动添加的本地 Jar.</li>
@@ -31,7 +31,7 @@ public enum SkillSourceType {
     /** Maven 插件依赖, 即 {@code skillsjars-maven-plugin} 自身 {@code <dependencies>} 下的 Jar. */
     MAVEN_PLUGIN_DEPENDENCY,
 
-    /** Gradle 普通依赖, 二期实现. */
+    /** Gradle 普通依赖, 三期接入 (详见 docs/phase3-publish.md). */
     GRADLE_DEPENDENCY,
 
     /** 当前模块产物 (output / classes 目录). */
