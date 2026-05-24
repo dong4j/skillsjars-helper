@@ -1,6 +1,118 @@
-<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <rect width="16" height="16" rx="2" fill="#4a63d4"/>
-    <path d="M4 4h8v8H4z" fill="#ffffff" opacity="0.2"/>
-    <path d="M6 6h4v4H6z" fill="#ffffff"/>
-</svg>
+<svg width="16" height="16" viewBox="0 0 640 640" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <title>SkillsJars Helper 16</title>
+    <defs>
+        <radialGradient id="bgGlow" cx="50%" cy="47%" r="48%">
+            <stop offset="0%" stop-color="#86F3FF" stop-opacity="0.22"/>
+            <stop offset="48%" stop-color="#FF9A1F" stop-opacity="0.14"/>
+            <stop offset="100%" stop-color="#000000" stop-opacity="0"/>
+        </radialGradient>
+        <linearGradient id="glass" x1="188" y1="168" x2="458" y2="514" gradientUnits="userSpaceOnUse">
+            <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.95"/>
+            <stop offset="0.22" stop-color="#E7F8FF" stop-opacity="0.52"/>
+            <stop offset="0.58" stop-color="#FFFFFF" stop-opacity="0.2"/>
+            <stop offset="1" stop-color="#FFFFFF" stop-opacity="0.8"/>
+        </linearGradient>
+        <linearGradient id="outline" x1="158" y1="166" x2="482" y2="514" gradientUnits="userSpaceOnUse">
+            <stop stop-color="#FFFFFF" offset=""/>
+            <stop offset="0.5" stop-color="#19324D"/>
+            <stop offset="1" stop-color="#FFFFFF"/>
+        </linearGradient>
+        <linearGradient id="lid" x1="166" y1="134" x2="480" y2="206" gradientUnits="userSpaceOnUse">
+            <stop stop-color="#FFFFFF" offset=""/>
+            <stop offset="0.2" stop-color="#D8E0EA"/>
+            <stop offset="0.5" stop-color="#FFFFFF"/>
+            <stop offset="0.8" stop-color="#D7DFEA"/>
+            <stop offset="1" stop-color="#FFFFFF"/>
+        </linearGradient>
+        <linearGradient id="lidShadow" x1="173" y1="196" x2="470" y2="196" gradientUnits="userSpaceOnUse">
+            <stop stop-color="#23364A" offset=""/>
+            <stop offset="0.5" stop-color="#07192A"/>
+            <stop offset="1" stop-color="#23364A"/>
+        </linearGradient>
+        <linearGradient id="blueLiquid" x1="184" y1="248" x2="459" y2="363" gradientUnits="userSpaceOnUse">
+            <stop stop-color="#008CFF" offset=""/>
+            <stop offset="0.5" stop-color="#00D7FF"/>
+            <stop offset="1" stop-color="#00A3FF"/>
+        </linearGradient>
+        <linearGradient id="yellowLiquid" x1="185" y1="336" x2="460" y2="447" gradientUnits="userSpaceOnUse">
+            <stop stop-color="#FF9E00" offset=""/>
+            <stop offset="0.48" stop-color="#FFE12A"/>
+            <stop offset="1" stop-color="#FFD314"/>
+        </linearGradient>
+        <linearGradient id="orangeLiquid" x1="184" y1="405" x2="458" y2="500" gradientUnits="userSpaceOnUse">
+            <stop stop-color="#FF4D00" offset=""/>
+            <stop offset="0.5" stop-color="#FF8400"/>
+            <stop offset="1" stop-color="#FF5A00"/>
+        </linearGradient>
+        <filter id="softShadow" x="106" y="118" width="428" height="470" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+            <feDropShadow dx="0" dy="18" stdDeviation="18" flood-color="#000000" flood-opacity="0.32"/>
+            <feDropShadow dx="0" dy="0" stdDeviation="16" flood-color="#49DFFF" flood-opacity="0.24"/>
+        </filter>
+        <filter id="bubbleGlow" x="0" y="0" width="640" height="640" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+            <feDropShadow dx="0" dy="0" stdDeviation="5" flood-color="#69F2FF" flood-opacity="0.9"/>
+        </filter>
+        <clipPath id="jarClip">
+            <path d="M198 218C198 207 207 198 218 198H424C435 198 444 207 444 218V240C444 264 472 282 476 323L488 437C494 493 450 542 394 542H246C190 542 146 493 152 437L164 323C168 282 198 264 198 240V218Z"/>
+        </clipPath>
+        <clipPath id="innerClip">
+            <path d="M186 267C186 256 195 247 206 247H434C445 247 454 256 454 267V440C454 484 418 520 374 520H266C222 520 186 484 186 440V267Z"/>
+        </clipPath>
+    </defs>
 
+    <rect width="640" height="640" rx="128" fill="url(#bgGlow)"/>
+
+    <g filter="url(#softShadow)">
+        <!-- Jar body outer glass -->
+        <path d="M198 218C198 207 207 198 218 198H424C435 198 444 207 444 218V240C444 264 472 282 476 323L488 437C494 493 450 542 394 542H246C190 542 146 493 152 437L164 323C168 282 198 264 198 240V218Z"
+              fill="#071E31"/>
+        <path d="M198 218C198 207 207 198 218 198H424C435 198 444 207 444 218V240C444 264 472 282 476 323L488 437C494 493 450 542 394 542H246C190 542 146 493 152 437L164 323C168 282 198 264 198 240V218Z"
+              stroke="url(#outline)" stroke-width="16" stroke-linejoin="round"/>
+        <path d="M207 222C207 215 213 209 220 209H420C427 209 433 215 433 222V243C433 272 459 287 463 324L475 438C480 486 442 528 394 528H246C198 528 160 486 165 438L177 324C181 287 207 272 207 243V222Z"
+              fill="url(#glass)" opacity="0.32"/>
+
+        <!-- Liquid clipped inside jar -->
+        <g clip-path="url(#innerClip)">
+            <rect x="186" y="247" width="268" height="273" fill="#052033"/>
+            <path d="M184 292C230 278 277 281 322 296C368 311 411 308 456 291V394H184V292Z" fill="url(#blueLiquid)"/>
+            <path d="M184 368C235 341 278 337 324 359C369 381 411 378 456 348V453H184V368Z" fill="url(#yellowLiquid)"/>
+            <path d="M184 430C233 410 279 418 322 441C371 466 411 453 456 425V520H184V430Z" fill="url(#orangeLiquid)"/>
+            <path d="M184 293C229 280 276 282 321 297C367 312 411 309 456 292" stroke="#B9F8FF" stroke-width="6" stroke-linecap="round"
+                  opacity="0.9"/>
+            <path d="M184 369C234 342 278 339 323 360C369 381 411 378 456 349" stroke="#FFF48A" stroke-width="5" stroke-linecap="round"
+                  opacity="0.45"/>
+            <rect x="205" y="260" width="22" height="238" rx="11" fill="#FFFFFF" opacity="0.22"/>
+            <rect x="420" y="265" width="17" height="218" rx="8.5" fill="#FFFFFF" opacity="0.16"/>
+            <circle cx="255" cy="452" r="12" fill="#FFDD3A" opacity="0.65"/>
+            <circle cx="304" cy="476" r="9" fill="#FFD22B" opacity="0.55"/>
+            <circle cx="358" cy="430" r="8" fill="#FF8A00" opacity="0.45"/>
+            <circle cx="405" cy="457" r="10" fill="#FF6A00" opacity="0.38"/>
+            <circle cx="283" cy="365" r="6" fill="#FFFFFF" opacity="0.28"/>
+            <circle cx="365" cy="333" r="7" fill="#FFFFFF" opacity="0.32"/>
+        </g>
+
+        <!-- Inner border -->
+        <path d="M186 267C186 256 195 247 206 247H434C445 247 454 256 454 267V440C454 484 418 520 374 520H266C222 520 186 484 186 440V267Z"
+              stroke="#FFFFFF" stroke-opacity="0.35" stroke-width="7"/>
+
+        <!-- Lid -->
+        <ellipse cx="320" cy="179" rx="151" ry="35" fill="url(#lid)"/>
+        <path d="M171 178H469V204C469 223 454 238 435 238H205C186 238 171 223 171 204V178Z" fill="url(#lid)"/>
+        <ellipse cx="320" cy="179" rx="151" ry="35" stroke="#FFFFFF" stroke-width="8" opacity="0.9"/>
+        <path d="M174 219C204 236 436 236 466 219" stroke="url(#lidShadow)" stroke-width="12" stroke-linecap="round"/>
+        <ellipse cx="320" cy="174" rx="128" ry="18" fill="#FFFFFF" opacity="0.72"/>
+
+        <!-- Bubbles -->
+        <g filter="url(#bubbleGlow)">
+            <circle cx="252" cy="251" r="8" fill="#D8FFFF"/>
+            <circle cx="299" cy="246" r="12" fill="#E9FFFF"/>
+            <circle cx="364" cy="249" r="9" fill="#D8FFFF"/>
+            <circle cx="398" cy="276" r="13" fill="#E9FFFF"/>
+            <circle cx="346" cy="316" r="12" fill="#D8FFFF" opacity="0.95"/>
+            <circle cx="300" cy="326" r="7" fill="#D8FFFF" opacity="0.8"/>
+            <circle cx="382" cy="176" r="9" fill="#E9FFFF"/>
+            <circle cx="339" cy="146" r="7" fill="#E9FFFF"/>
+            <circle cx="288" cy="162" r="6" fill="#D8FFFF"/>
+            <circle cx="424" cy="154" r="4" fill="#D8FFFF"/>
+        </g>
+    </g>
+</svg>
