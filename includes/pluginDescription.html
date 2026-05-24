@@ -1,92 +1,105 @@
 <p>
-    <b>SkillsJars Helper</b> is a JetBrains IDE plugin that brings discovery, preview, export and publishing
-    workflows for Agent Skills distributed through SkillsJars directly into your IDE.
-    <br/>
-    <b>SkillsJars Helper</b> 是一款 JetBrains IDE 插件, 直接在 IDE 内提供通过 SkillsJars 分发的 Agent Skills
-    的发现、预览、导出与发布工作流.
+    <b>SkillsJars Helper</b> is a JetBrains IDE plugin that makes Agent Skills shipped as Maven artifacts
+    (SkillsJars) first-class citizens: discover them on the classpath, preview <code>SKILL.md</code>
+    straight from inside the JAR, and export any skill to a local Agent directory with one click.
 </p>
 
-<a href="https://github.com/dong4j/skillsjars-helper">GitHub</a> |
-<a href="https://www.skillsjars.com/">SkillsJars</a>
+<p>
+    <a href="https://github.com/dong4j/skillsjars-helper">GitHub</a> |
+    <a href="https://www.skillsjars.com/">SkillsJars</a> |
+    <a href="https://plugins.jetbrains.com/vendor/9afaba35-91ea-4364-8ced-64db868dd23e">More plugins</a>
+</p>
+
+<hr/>
+
+<h3>Why</h3>
+<p>
+    Agent Skills — a <code>SKILL.md</code> plus optional scripts and assets — are how modern coding agents
+    (Claude Code, Codex, Junie, Cursor, Gemini, Qoder, Trae, CodeBuddy, …) pick up reusable behaviour.
+    SkillsJars packages them as plain Maven / Gradle artifacts so a team can version and share skills
+    like any other dependency. This plugin closes the last gap: making those skills visible and usable inside
+    the IDE without ever unpacking a JAR.
+</p>
+
+<h3>Features</h3>
+<ul>
+    <li><b>Discovery</b>: scans Maven regular dependencies and Maven plugin <code>dependencies</code> for
+        <code>META-INF/skills/**/SKILL.md</code> and <code>META-INF/resources/skills/**/SKILL.md</code>;
+        exposes results through a public project-level <code>SkillRegistry</code> service.
+    </li>
+    <li><b>Agent Skills tool window</b>: skills are grouped by artifact in a tree, with a dedicated description
+        panel below a draggable splitter. Double-click or <kbd>Enter</kbd> opens <code>SKILL.md</code> in-place;
+        right-click for Open / Copy Name / Copy Coordinate / Open Source Jar.
+    </li>
+    <li><b>One-click export</b>: export a skill (or the whole JAR) into nine preset Agent directories —
+        <code>.claude/skills</code>, <code>.codex/skills</code>, <code>.junie/skills</code>,
+        <code>.agents/skills</code>, <code>.cursor/skills</code>, <code>.gemini/skills</code>,
+        <code>.qoder/skills</code>, <code>.trae/skills</code>, <code>.codebuddy/skills</code> — or a custom
+        directory. Each exported folder gets a manifest with per-file <code>sha256</code>, so upgrades, local
+        edits and same-name conflicts are detected automatically.
+    </li>
+    <li><b>Install state badges</b>: every skill leaf right-aligns brand icons of the Agent directories it is
+        already installed into; tooltip spells out the agent ids in plain text.
+    </li>
+    <li><b>Open extension point</b>: <code>skillSourceScanner</code> lets third-party plugins add Gradle, SBT
+        or proprietary build systems without touching the coordinator.
+    </li>
+</ul>
+
+<h3>How to use</h3>
+<ol>
+    <li>Add any SkillsJars to your project (as a regular Maven dependency or under
+        <code>skillsjars-maven-plugin</code>'s <code>＜dependencies＞</code>).
+    </li>
+    <li>Open the Agent Skills tool window on the right; the skills will appear, grouped by artifact.</li>
+    <li>Double-click a skill to read its <code>SKILL.md</code>; right-click to export it to the Agent directory
+        of your choice. The badges on each skill leaf show where it is already installed.
+    </li>
+</ol>
 
 <hr/>
 
 <p>
-    Modern AI-assisted development is increasingly powered by reusable
-    <i>Agent Skills</i>&mdash;directories that contain a <code>SKILL.md</code> plus optional scripts and assets.
-    SkillsJars lets you ship those skills as Maven / Gradle artifacts. <i>SkillsJars Helper</i> turns
-    those artifacts into first-class IDE citizens: every classpath JAR carrying skills shows up in a
-    dedicated tool window, you can read <code>SKILL.md</code> without unpacking the JAR, and (in upcoming
-    milestones) you will be able to export skills into local Agent directories such as
-    <code>.claude/skills</code>, <code>.codex/skills</code>, and <code>.junie/skills</code> with one click.
+    <b>SkillsJars Helper</b> 让以 Maven artifact 形式分发的 Agent Skills (即 SkillsJars) 在 JetBrains IDE 中
+    成为一等公民: 在 classpath 上自动发现、不解压直接预览 <code>SKILL.md</code>, 并一键导出到本地 Agent 目录.
 </p>
 
-<h3>Core Capabilities</h3>
-<ul>
-    <li><b>Dependency scanning</b>: discovers JARs that contain
-        <code>META-INF/skills/**/SKILL.md</code> or <code>META-INF/resources/skills/**/SKILL.md</code>
-        across Maven regular dependencies and Maven plugin <code>&lt;dependencies&gt;</code>.
-    </li>
-    <li><b>SkillsJar preview</b>: opens skill frontmatter and Markdown content directly from inside JARs
-        &mdash; no temporary extraction required.
-    </li>
-    <li><b>Tree-based tool window</b>: groups skills by artifact, ships a dedicated description panel,
-        and supports speed-search, tooltips, double-click / Enter / right-click menus.
-    </li>
-    <li><b>Open extension point</b>: third-party plugins can register custom
-        <code>SkillSourceScanner</code> implementations to support Gradle, SBT or proprietary build systems.
-    </li>
-    <li><b>Agent export <i>(planned)</i></b>: prepares extraction to local Agent directories such as
-        <code>.claude/skills</code>, <code>.codex/skills</code>, and <code>.junie/skills</code> with manifest
-        bookkeeping.
-    </li>
-    <li><b>Publishing preparation <i>(planned)</i></b>: validates a local skill set before packaging and
-        publishing it as a SkillsJar.
-    </li>
-</ul>
-
-<h3>Development Status</h3>
-<ul>
-    <li><b>Phase 1 &mdash; <i>Available</i></b>: SkillsJars discovery (Maven), <code>SKILL.md</code> parsing,
-        public <code>SkillRegistry</code> API, and the tree-based <i>Agent Skills</i> tool window.
-    </li>
-    <li><b>Phase 2 &mdash; <i>Planned</i></b>: skill export to local Agent directories, manifest writing,
-        and pre-publish validation.
-    </li>
-    <li><b>Phase 2 &mdash; <i>Planned</i></b>: Gradle dependency scanner, plugged in through the same
-        <code>skillSourceScanner</code> extension point.
-    </li>
-</ul>
-
-<hr/>
-
+<h3>这是什么</h3>
 <p>
-    现代 AI 辅助研发越来越依赖可复用的 <i>Agent Skills</i> &mdash; 一个目录, 包含 <code>SKILL.md</code> 与可选的脚本/资源.
-    SkillsJars 把这些 skill 以 Maven / Gradle artifact 的形式分发. <i>SkillsJars Helper</i> 让这类
-    artifact 在 IDE 中获得一等公民待遇: classpath 中所有携带 skill 的 JAR 都会在专用工具窗里列出, 你可以
-    不解压直接预览 <code>SKILL.md</code>; 在后续版本中, 你将能够一键把 skill 导出到本地 Agent 目录, 例如
-    <code>.claude/skills</code>, <code>.codex/skills</code>, <code>.junie/skills</code>.
+    Agent Skills (一份 <code>SKILL.md</code> 加可选脚本 / 资源) 是现代 Coding Agent (Claude Code、Codex、Junie、
+    Cursor、Gemini、Qoder、Trae、CodeBuddy …) 复用行为的标准载体. SkillsJars 把它们打成 Maven / Gradle
+    artifact, 让团队像管理普通依赖一样版本化和共享 skill. 本插件补上 IDE 里的最后一公里: 不解压、不离开 IDE,
+    即可发现、预览和分发这些 skill.
 </p>
 
-<h3>核心能力</h3>
+<h3>主要能力</h3>
 <ul>
-    <li><b>依赖扫描</b>: 发现 Maven 普通依赖与 Maven plugin <code>&lt;dependencies&gt;</code> 中包含
-        <code>META-INF/skills/**/SKILL.md</code> 或 <code>META-INF/resources/skills/**/SKILL.md</code> 的 JAR.
+    <li><b>依赖扫描</b>: 自动扫描 Maven 普通依赖与 Maven plugin <code>dependencies</code>, 解析 JAR 内
+        <code>META-INF/skills/**/SKILL.md</code> 与 <code>META-INF/resources/skills/**/SKILL.md</code>,
+        通过项目级 <code>SkillRegistry</code> 服务对外暴露.
     </li>
-    <li><b>SkillsJar 预览</b>: 直接读取 JAR 内的 frontmatter 与 Markdown 正文, 无需解压到临时目录.</li>
-    <li><b>树形工具窗</b>: 按 artifact 分组、独立的描述面板, 支持 SpeedSearch / Tooltip / 双击 / 回车 / 右键菜单.</li>
-    <li><b>开放扩展点</b>: 三方插件可实现 <code>SkillSourceScanner</code>, 接入 Gradle / SBT 或自有构建系统.</li>
-    <li><b>导出到 Agent <i>(规划中)</i></b>: 一键导出 skill 到本地 Agent 目录 (例如
-        <code>.claude/skills</code> / <code>.codex/skills</code> / <code>.junie/skills</code>) 并维护 manifest.
+    <li><b>Agent Skills 工具窗</b>: 按 artifact 分组的树, 下方独立描述面板 (可上下拖动). 双击或 <kbd>Enter</kbd>
+        直接打开 <code>SKILL.md</code>; 右键菜单含 Open / Copy Name / Copy Coordinate / Open Source Jar.
     </li>
-    <li><b>发布前检查 <i>(规划中)</i></b>: 在打包发布 SkillsJar 前对本地 skill 进行结构校验.</li>
+    <li><b>一键导出</b>: 右键 skill (或整个 JAR) 导出到 9 个预设 Agent 目录 (<code>.claude/skills</code>,
+        <code>.codex/skills</code>, <code>.junie/skills</code>, <code>.agents/skills</code>,
+        <code>.cursor/skills</code>, <code>.gemini/skills</code>, <code>.qoder/skills</code>,
+        <code>.trae/skills</code>, <code>.codebuddy/skills</code>) 或自定义目录. 导出时写入 manifest
+        (含来源 artifact 与每文件 <code>sha256</code>), 自动判断升级、本地修改与同名冲突.
+    </li>
+    <li><b>安装徽标</b>: skill 叶子节点右对齐显示已安装到的 Agent 品牌图标, tooltip 明确列出 agent id.
+    </li>
+    <li><b>开放扩展点</b>: <code>skillSourceScanner</code> 允许三方插件扩展 Gradle / SBT 或自有构建系统的扫描,
+        无需改动本插件协调层.
+    </li>
 </ul>
 
-<h3>开发状态</h3>
-<ul>
-    <li><b>一期 &mdash; <i>已就绪</i></b>: SkillsJars 解析 (Maven), SKILL.md 解析, 公共 <code>SkillRegistry</code> API,
-        以及树形 <i>Agent Skills</i> 工具窗.
+<h3>怎么用</h3>
+<ol>
+    <li>把任意 SkillsJars 加入项目 (作为普通 Maven 依赖, 或放在 <code>skillsjars-maven-plugin</code> 的
+        <code>dependencies</code> 下).
     </li>
-    <li><b>二期 &mdash; <i>规划中</i></b>: Skill 导出到本地 Agent 目录, manifest 写入, 发布前结构校验.</li>
-    <li><b>二期 &mdash; <i>规划中</i></b>: Gradle 依赖扫描, 通过同一 <code>skillSourceScanner</code> 扩展点接入.</li>
-</ul>
+    <li>打开右侧的 Agent Skills 工具窗, 即可看到按 artifact 分组的 skill 列表.</li>
+    <li>双击 skill 查看 <code>SKILL.md</code>; 右键导出到目标 Agent 目录. skill 叶子节点上的徽标会实时显示当前已安装位置.
+    </li>
+</ol>

@@ -1,117 +1,65 @@
 <div>
-    <h3>2026.1.2000</h3>
+    <h3>2026.1.1000 — Initial Release</h3>
     <ul>
-        <li><b>Skill export</b>: a public project-level <code>SkillExportService</code> mirrors
-            <code>SkillRegistry</code>; right-click any skill to export it (or its whole jar) to one of nine preset
-            Agent skills directories (<code>.claude/skills</code>, <code>.codex/skills</code>,
-            <code>.junie/skills</code>, <code>.agents/skills</code>, <code>.cursor/skills</code>,
-            <code>.gemini/skills</code>, <code>.qoder/skills</code>, <code>.trae/skills</code>,
-            <code>.codebuddy/skills</code>) or a custom directory.
+        <li><b>Skill discovery</b>: scans Maven regular dependencies and Maven plugin
+            <code>＜dependencies＞</code>, parses <code>META-INF/skills/**/SKILL.md</code> and
+            <code>META-INF/resources/skills/**/SKILL.md</code> from inside JARs, and exposes results
+            through a project-level <code>SkillRegistry</code> service.
         </li>
-        <li><b>Naming aligned with Agent Skills spec</b>: the exported folder is named after the
-            <code>SKILL.md</code> frontmatter <code>name</code>, not the flattened
-            <code>skillsjars__org__repo__</code> form &mdash; matching the convention adopted by
-            <code>useSkillsNameAsDirectory=true</code> in <code>skillsjars-maven-plugin</code> v0.0.7.
+        <li><b>Agent Skills tool window</b>: artifacts grouped one level deep, skills as leaves;
+            description panel below a draggable splitter; speed search, tooltips, double-click /
+            <kbd>Enter</kbd> to open <code>SKILL.md</code>; right-click for Open / Copy Name /
+            Copy Coordinate / Open Source Jar.
         </li>
-        <li><b>Six-state install machine</b>: <code>NEW</code> / <code>UP_TO_DATE</code> /
-            <code>OUTDATED</code> / <code>LOCALLY_MODIFIED</code> / <code>FOREIGN</code> /
-            <code>DUPLICATE_NAME</code>. Frequent paths (NEW / OUTDATED) write silently with a notification;
-            sensitive ones (LOCALLY_MODIFIED / FOREIGN) prompt yes/no; same-name conflicts from a different artifact
-            offer a three-way choice (overwrite original / use suffixed name / cancel).
+        <li><b>One-click export</b>: export a skill (or the whole JAR) into nine preset Agent directories
+            (<code>.claude/skills</code>, <code>.codex/skills</code>, <code>.junie/skills</code>,
+            <code>.agents/skills</code>, <code>.cursor/skills</code>, <code>.gemini/skills</code>,
+            <code>.qoder/skills</code>, <code>.trae/skills</code>, <code>.codebuddy/skills</code>) or a
+            custom directory. Folder name follows the <code>SKILL.md</code> <code>name</code> field per
+            the Agent Skills convention.
         </li>
-        <li><b>Manifest <code>.skillsjars-helper.json</code></b>: written into every exported skill folder with
-            <code>artifact</code> + <code>skillRoot</code> + per-file <code>sha256</code>; used to detect upgrades
-            and local edits without a heavy index.
+        <li><b>Manifest and install states</b>: each exported folder writes a
+            <code>.skillsjars-helper.json</code> with source artifact and per-file <code>sha256</code>,
+            so upgrades, local edits and same-name conflicts are detected automatically. Common paths
+            write silently with a notification; sensitive ones prompt for confirmation.
         </li>
-        <li><b>Installation badges</b>: skill leaves show a row of brand icons (Claude, Codex, Junie, Cursor,
-            Gemini, Qoder, Trae, CodeBuddy, plus a folder icon for custom directories) <b>right-aligned</b>
-            on the same row as the skill name &mdash; the cell is stretched to the tree width so badges line up
-            across rows even when names have different lengths. Tooltip still spells out the agent ids in plain
-            text. An <code>InstallationRegistryService</code> scans every preset directory on startup and after
-            every export.
+        <li><b>Install state badges</b>: skill leaves right-align brand icons for every Agent directory
+            the skill is already installed into; an <code>InstallationRegistryService</code> rescans the
+            preset directories on startup and after every export.
         </li>
-        <li><b>Tests</b>: <code>ExportNamingTest</code>, <code>ManifestJsonTest</code>, <code>ExportPlannerTest</code>
-            covering all six install states; <code>SkillJarParserTest</code> extended to verify file enumeration.
+        <li><b>Public extension point</b>: <code>skillSourceScanner</code> lets third-party plugins add
+            Gradle, SBT or proprietary scanners without touching the coordinator.
         </li>
+        <li><b>i18n</b>: English and Simplified Chinese message bundles.</li>
     </ul>
 
     <ul>
-        <li><b>Skill 导出</b>: 新增项目级 <code>SkillExportService</code>, 与 <code>SkillRegistry</code> 对称暴露;
-            右键任意 skill 可导出到 9 个预设 Agent 目录 (<code>.claude/skills</code>, <code>.codex/skills</code>,
-            <code>.junie/skills</code>, <code>.agents/skills</code>, <code>.cursor/skills</code>,
-            <code>.gemini/skills</code>, <code>.qoder/skills</code>, <code>.trae/skills</code>,
-            <code>.codebuddy/skills</code>) 或自定义目录, 整个 jar 也可一键批量导出.
+        <li><b>Skill 发现</b>: 扫描 Maven 普通依赖与 Maven plugin <code>＜dependencies＞</code>,
+            解析 JAR 内 <code>META-INF/skills/**/SKILL.md</code> 与
+            <code>META-INF/resources/skills/**/SKILL.md</code>, 通过项目级
+            <code>SkillRegistry</code> 服务对外暴露.
         </li>
-        <li><b>命名对齐 Agent Skills 规范</b>: 导出目录直接采用 <code>SKILL.md</code> frontmatter 的
-            <code>name</code>, 不再使用 <code>skillsjars__org__repo__</code> 扁平化前缀, 与
-            <code>skillsjars-maven-plugin</code> v0.0.7 的 <code>useSkillsNameAsDirectory=true</code> 保持一致.
+        <li><b>Agent Skills 工具窗</b>: 按 artifact 一层折叠, skill 作为叶子节点; 下方独立描述面板
+            (上下可拖动); SpeedSearch / tooltip / 双击或 <kbd>Enter</kbd> 打开 <code>SKILL.md</code>;
+            右键菜单含 Open / Copy Name / Copy Coordinate / Open Source Jar.
         </li>
-        <li><b>6 状态写入机</b>: <code>NEW</code> / <code>UP_TO_DATE</code> / <code>OUTDATED</code> /
-            <code>LOCALLY_MODIFIED</code> / <code>FOREIGN</code> / <code>DUPLICATE_NAME</code>. 常用路径
-            (NEW / OUTDATED) 直接写入 + Notification; 敏感场景 (LOCALLY_MODIFIED / FOREIGN) yes/no 二次确认;
-            来自不同 artifact 的同名冲突 (DUPLICATE_NAME) 弹三选项: 覆盖原有 / 改用后缀名 / 取消.
+        <li><b>一键导出</b>: 右键 skill (或整个 JAR) 导出到 9 个预设 Agent 目录
+            (<code>.claude/skills</code>, <code>.codex/skills</code>, <code>.junie/skills</code>,
+            <code>.agents/skills</code>, <code>.cursor/skills</code>, <code>.gemini/skills</code>,
+            <code>.qoder/skills</code>, <code>.trae/skills</code>, <code>.codebuddy/skills</code>)
+            或自定义目录; 目录名严格采用 <code>SKILL.md</code> 的 <code>name</code> 字段,
+            与 Agent Skills 规范一致.
         </li>
-        <li><b>Manifest <code>.skillsjars-helper.json</code></b>: 写入每个导出目录, 包含 <code>artifact</code> +
-            <code>skillRoot</code> + 每文件 <code>sha256</code>, 用于判断升级与本地修改, 无需重型索引.
+        <li><b>Manifest 与安装状态</b>: 每个导出目录写入 <code>.skillsjars-helper.json</code>
+            (含来源 artifact 与每文件 <code>sha256</code>), 自动判断升级 / 本地修改 / 同名冲突;
+            常用路径静默写入 + Notification, 敏感场景弹出二次确认.
         </li>
-        <li><b>安装徽标</b>: skill 叶子节点 <b>右对齐</b> 在 skill name 同一行尾, 显示一组各 Agent 品牌图标
-            (Claude / Codex / Junie / Cursor / Gemini / Qoder / Trae / CodeBuddy, 自定义目录用文件夹图标);
-            cell 宽度被强制撑到 tree 宽度, 不同节点的徽标列视觉对齐. tooltip 仍以纯文本明确列出 agent id,
-            兜底图标识别度. 启动与每次导出后, <code>InstallationRegistryService</code> 自动重扫所有预设目录
-            的 manifest.
+        <li><b>安装徽标</b>: skill 叶子节点右对齐显示已安装到的 Agent 品牌图标;
+            <code>InstallationRegistryService</code> 在启动和每次导出后自动重扫所有预设目录.
         </li>
-        <li><b>测试</b>: 新增 <code>ExportNamingTest</code> / <code>ManifestJsonTest</code> /
-            <code>ExportPlannerTest</code>, 完整覆盖 6 种安装状态; <code>SkillJarParserTest</code> 增补
-            文件枚举用例.
+        <li><b>开放扩展点</b>: <code>skillSourceScanner</code> 允许三方插件扩展 Gradle / SBT
+            或自有构建系统的扫描, 无需改动协调层.
         </li>
-    </ul>
-</div>
-<div>
-    <h3>2026.1.1000</h3>
-    <ul>
-        <li><b>Discovery pipeline</b>: scans Maven regular dependencies and Maven plugin <code>&lt;dependencies&gt;</code>,
-            parses <code>META-INF/skills/**/SKILL.md</code> and <code>META-INF/resources/skills/**/SKILL.md</code>
-            inside JARs, and exposes results through a project-level <code>SkillRegistry</code> service.
-        </li>
-        <li><b>Extension point</b>: introduces
-            <code>dev.dong4j.idea.skillsjars.helper.skillSourceScanner</code> so future Gradle / SBT scanners
-            and third-party plugins can plug in without changes to the coordinator.
-        </li>
-        <li><b>Tree-based <i>Agent Skills</i> tool window</b>: artifacts are grouped one level deep,
-            skills become leaves; a dedicated description panel sits below a draggable splitter and shows the
-            full <code>description</code> of the selected skill.
-        </li>
-        <li><b>Tree interactions</b>: double-click or <kbd>Enter</kbd> opens the in-jar <code>SKILL.md</code>;
-            right-click offers <i>Open SKILL.md</i> / <i>Copy Skill Name</i> / <i>Copy Coordinate</i> /
-            <i>Open Source Jar</i>; type-to-filter speed search; hover tooltips; link-style empty state with
-            inline <i>Refresh</i>.
-        </li>
-        <li><b>Toolbar</b>: minimal <i>Refresh</i> / <i>Expand All</i> / <i>Collapse All</i>; status bar shows the
-            global summary only.
-        </li>
-        <li><b>Internationalization</b>: bundle messages updated for English and Simplified Chinese.</li>
-        <li><b>Tests</b>: 25 unit tests covering coordinate parsing, <code>SKILL.md</code> frontmatter parsing,
-            JAR-level parsing and the tree model.
-        </li>
-    </ul>
-
-    <ul>
-        <li><b>解析链路</b>: 扫描 Maven 普通依赖与 Maven plugin <code>&lt;dependencies&gt;</code>, 解析 JAR 内
-            <code>META-INF/skills/**/SKILL.md</code> 与 <code>META-INF/resources/skills/**/SKILL.md</code>,
-            通过项目级 <code>SkillRegistry</code> 服务对外暴露快照.
-        </li>
-        <li><b>扩展点</b>: 引入 <code>dev.dong4j.idea.skillsjars.helper.skillSourceScanner</code>, 后续 Gradle / SBT
-            扫描器与三方插件可直接接入, 协调层无需改动.
-        </li>
-        <li><b>树形 <i>Agent Skills</i> 工具窗</b>: 按 artifact 一层折叠, skill 作为叶子节点; 下方提供独立的
-            描述面板 (上下可拖动分屏), 完整展示选中 skill 的 <code>description</code>.
-        </li>
-        <li><b>树形交互</b>: 双击或 <kbd>Enter</kbd> 打开 jar 内 <code>SKILL.md</code>; 右键菜单含
-            <i>Open SKILL.md</i> / <i>Copy Skill Name</i> / <i>Copy Coordinate</i> / <i>Open Source Jar</i>;
-            SpeedSearch 字母即时过滤; hover tooltip; 链接样式空状态内嵌 <i>Refresh</i>.
-        </li>
-        <li><b>工具栏</b>: 仅保留 <i>Refresh</i> / <i>Expand All</i> / <i>Collapse All</i>; 状态栏只展示全局汇总.</li>
-        <li><b>国际化</b>: 中英 Bundle 同步更新.</li>
-        <li><b>单元测试</b>: 新增 25 个用例, 覆盖坐标解析 / SKILL.md frontmatter 解析 / JAR 解析 / 树模型构建.</li>
+        <li><b>国际化</b>: 中英 Bundle 同步.</li>
     </ul>
 </div>
