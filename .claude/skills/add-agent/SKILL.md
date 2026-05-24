@@ -79,11 +79,11 @@ public static Icon forAgent(@NotNull String agentId) {
 
 ### 4. 同步文档
 
-| 文件 | 改什么 |
-|---|---|
-| `docs/design.md` | "支持的 Agent 列表" 一节加一项 `.{agentId}/skills` |
-| `README.md` | 项目简介里的 Agent 列表 |
-| `includes/pluginChanges.html` | changelog (中英两段都要补, 描述本次新增了什么 Agent) |
+| 文件                            | 改什么                                      |
+|-------------------------------|------------------------------------------|
+| `docs/design.md`              | "支持的 Agent 列表" 一节加一项 `.{agentId}/skills` |
+| `README.md`                   | 项目简介里的 Agent 列表                          |
+| `includes/pluginChanges.html` | changelog (中英两段都要补, 描述本次新增了什么 Agent)     |
 
 ## Build & Test
 
@@ -94,9 +94,9 @@ public static Icon forAgent(@NotNull String agentId) {
 
 视觉验收 (在沙箱 IDE 中):
 
-- ✅ Tool Window 右键菜单 "Extract to ▸" 出现新条目 `.{agentId}/skills`
-- ✅ 把任意 skill 导出到该目录后, 树叶子右侧出现新的品牌徽标
-- ✅ 徽标视觉大小与其他 Agent 一致 (16×16, 不应明显偏大或偏小, 这取决于
+- Tool Window 右键菜单 "Extract to ▸" 出现新条目 `.{agentId}/skills`
+- 把任意 skill 导出到该目录后, 树叶子右侧出现新的品牌徽标
+- 徽标视觉大小与其他 Agent 一致 (16×16, 不应明显偏大或偏小, 这取决于
   add-agent-icon 是否做了 alpha bbox 裁剪)
 
 ## Canonical Example
