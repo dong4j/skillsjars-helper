@@ -67,12 +67,7 @@
             implementation="dev.dong4j.idea.skillsjars.helper.scanner.MavenLibraryScanner"/>
     </extensions>
 
-    <!-- 插件定义的动作 -->
-    <actions>
-        <!-- 编辑器右键菜单 -->
-        <action id="dev.dong4j.idea.skillsjars.helper.action.SkillsJarsHelperAction"
-                class="dev.dong4j.idea.skillsjars.helper.action.SkillsJarsHelperAction">
-            <add-to-group group-id="EditorPopupMenu" anchor="last"/>
-        </action>
-    </actions>
+    <!-- 当前不注册任何 EditorPopupMenu / ProjectViewPopupMenu 级别的 Action;
+         所有 SkillsJars 操作都集中在 "Agent Skills" Tool Window 内部,
+         避免在用户编辑代码 / 浏览项目时增加无关的右键噪声. -->
 </idea-plugin>
