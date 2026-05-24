@@ -1,16 +1,49 @@
 <div>
-    <h3>0.2.0</h3>
+    <h3>2026.1.1000</h3>
     <ul>
-        <li>Added the SkillsJars discovery pipeline: Maven dependency scanner, Maven plugin dependency scanner, JAR-level <code>SKILL.md</code> parser, and a project-level <code>SkillRegistry</code> service.</li>
-        <li>Introduced the <code>dev.dong4j.idea.skillsjars.helper.skillSourceScanner</code> extension point so future Gradle/SBT scanners and third-party plugins can plug in without changes to the coordinator.</li>
-        <li>Added the <code>Agent Skills</code> tool window with a sortable table (Skill / Description / Source / Artifact / Allowed Tools) and Refresh / Open Source Jar actions.</li>
-        <li>Added unit tests for frontmatter parsing, JAR parsing, coordinate parsing, and the table model.</li>
+        <li><b>Discovery pipeline</b>: scans Maven regular dependencies and Maven plugin <code>&lt;dependencies&gt;</code>,
+            parses <code>META-INF/skills/**/SKILL.md</code> and <code>META-INF/resources/skills/**/SKILL.md</code>
+            inside JARs, and exposes results through a project-level <code>SkillRegistry</code> service.
+        </li>
+        <li><b>Extension point</b>: introduces
+            <code>dev.dong4j.idea.skillsjars.helper.skillSourceScanner</code> so future Gradle / SBT scanners
+            and third-party plugins can plug in without changes to the coordinator.
+        </li>
+        <li><b>Tree-based <i>Agent Skills</i> tool window</b>: artifacts are grouped one level deep,
+            skills become leaves; a dedicated description panel sits below a draggable splitter and shows the
+            full <code>description</code> of the selected skill.
+        </li>
+        <li><b>Tree interactions</b>: double-click or <kbd>Enter</kbd> opens the in-jar <code>SKILL.md</code>;
+            right-click offers <i>Open SKILL.md</i> / <i>Copy Skill Name</i> / <i>Copy Coordinate</i> /
+            <i>Open Source Jar</i>; type-to-filter speed search; hover tooltips; link-style empty state with
+            inline <i>Refresh</i>.
+        </li>
+        <li><b>Toolbar</b>: minimal <i>Refresh</i> / <i>Expand All</i> / <i>Collapse All</i>; status bar shows the
+            global summary only.
+        </li>
+        <li><b>Internationalization</b>: bundle messages updated for English and Simplified Chinese.</li>
+        <li><b>Tests</b>: 25 unit tests covering coordinate parsing, <code>SKILL.md</code> frontmatter parsing,
+            JAR-level parsing and the tree model.
+        </li>
     </ul>
-    <h3>0.1.0</h3>
+
     <ul>
-        <li>Initialized the JetBrains IDE plugin project from the non-AI template.</li>
-        <li>Added the base Gradle IntelliJ Platform project structure.</li>
-        <li>Added the initial editor action entry for future SkillsJars refresh and discovery workflows.</li>
-        <li>Added plugin metadata, bundle resources, icons, and notification wiring.</li>
+        <li><b>解析链路</b>: 扫描 Maven 普通依赖与 Maven plugin <code>&lt;dependencies&gt;</code>, 解析 JAR 内
+            <code>META-INF/skills/**/SKILL.md</code> 与 <code>META-INF/resources/skills/**/SKILL.md</code>,
+            通过项目级 <code>SkillRegistry</code> 服务对外暴露快照.
+        </li>
+        <li><b>扩展点</b>: 引入 <code>dev.dong4j.idea.skillsjars.helper.skillSourceScanner</code>, 后续 Gradle / SBT
+            扫描器与三方插件可直接接入, 协调层无需改动.
+        </li>
+        <li><b>树形 <i>Agent Skills</i> 工具窗</b>: 按 artifact 一层折叠, skill 作为叶子节点; 下方提供独立的
+            描述面板 (上下可拖动分屏), 完整展示选中 skill 的 <code>description</code>.
+        </li>
+        <li><b>树形交互</b>: 双击或 <kbd>Enter</kbd> 打开 jar 内 <code>SKILL.md</code>; 右键菜单含
+            <i>Open SKILL.md</i> / <i>Copy Skill Name</i> / <i>Copy Coordinate</i> / <i>Open Source Jar</i>;
+            SpeedSearch 字母即时过滤; hover tooltip; 链接样式空状态内嵌 <i>Refresh</i>.
+        </li>
+        <li><b>工具栏</b>: 仅保留 <i>Refresh</i> / <i>Expand All</i> / <i>Collapse All</i>; 状态栏只展示全局汇总.</li>
+        <li><b>国际化</b>: 中英 Bundle 同步更新.</li>
+        <li><b>单元测试</b>: 新增 25 个用例, 覆盖坐标解析 / SKILL.md frontmatter 解析 / JAR 解析 / 树模型构建.</li>
     </ul>
 </div>
