@@ -51,7 +51,13 @@ import dev.dong4j.idea.skillsjars.helper.api.SkillRegistry;
 import dev.dong4j.idea.skillsjars.helper.api.SkillRegistryListener;
 import dev.dong4j.idea.skillsjars.helper.api.model.SkillDescriptor;
 import dev.dong4j.idea.skillsjars.helper.api.model.SkillJarArtifact;
+import dev.dong4j.idea.skillsjars.helper.api.model.SkillTargetDirectory;
+import dev.dong4j.idea.skillsjars.helper.service.InstallationRegistryService;
 import dev.dong4j.idea.skillsjars.helper.util.SkillsJarsHelperBundle;
+
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 import icons.SkillsJarsHelperIcons;
 
@@ -92,6 +98,15 @@ public final class SkillsToolWindowPanel extends JPanel implements Disposable {
     private final SkillRegistry registry;
 
     @NotNull
+    private final InstallationRegistryService installationRegistry;
+
+    @NotNull
+    private final SkillExportInteraction exportInteraction;
+
+    @NotNull
+    private final SkillsTreeCellRenderer treeRenderer = new SkillsTreeCellRenderer();
+
+    @NotNull
     private final Tree tree;
 
     /** 描述面板: 多行只读, 跟随选中变化, 是状态栏不擅长展示长文本时的补充. */
@@ -110,6 +125,8 @@ public final class SkillsToolWindowPanel extends JPanel implements Disposable {
         super(new BorderLayout());
         this.project = project;
         this.registry = SkillRegistry.getInstance(project);
+        this.installationRegistry = InstallationRegistryService.getInstance(project);
+        this.exportInteraction = new SkillExportInteraction(project);
 
         this.tree = this.createTree();
         this.descriptionArea = this.createDescriptionArea();
@@ -138,6 +155,10 @@ public final class SkillsToolWindowPanel extends JPanel implements Disposable {
             }
         });
         Disposer.register(this, subscription);
+
+        // 订阅安装索引变更: 安装/卸载后只需要重绘树, 不需要重建模型
+        Disposable installSub = this.installationRegistry.addListener(src -> this.tree.repaint());
+        Disposer.register(this, installSub);
 
         this.applySnapshot(this.registry.getArtifacts());
         this.registry.refresh();
@@ -175,7 +196,9 @@ public final class SkillsToolWindowPanel extends JPanel implements Disposable {
         };
         tree.setRootVisible(false);
         tree.setShowsRootHandles(true);
-        tree.setCellRenderer(new SkillsTreeCellRenderer());
+        // renderer 注入安装状态查询器: 渲染时同步访问 InstallationRegistry 的快照
+        this.treeRenderer.setInstalledAgentsResolver(this::installedAgents);
+        tree.setCellRenderer(this.treeRenderer);
 
         // 空状态: 居中提示 + 链接形态的 Refresh
         tree.getEmptyText()
@@ -252,12 +275,30 @@ public final class SkillsToolWindowPanel extends JPanel implements Disposable {
         // 右键弹出菜单
         DefaultActionGroup popupGroup = new DefaultActionGroup();
         popupGroup.add(new OpenSkillMdAction());
+        popupGroup.add(new ExtractSkillToGroup());
+        popupGroup.add(new ExtractArtifactToGroup());
         popupGroup.addSeparator();
         popupGroup.add(new CopySkillNameAction());
         popupGroup.add(new CopyCoordinateAction());
         popupGroup.addSeparator();
         popupGroup.add(new OpenSourceJarAction());
         PopupHandler.installPopupMenu(this.tree, popupGroup, POPUP_PLACE);
+    }
+
+    /**
+     * 当前 skill 已安装到了哪些 agent (按 agentId 字符串集合返回, 保持稳定排序).
+     */
+    @NotNull
+    private java.util.Set<String> installedAgents(@NotNull SkillsTreeModel.SkillNode node) {
+        var locations = this.installationRegistry.findInstalledLocations(
+            node.artifact().getCoordinate(),
+            node.skill().getJarEntryRoot()
+        );
+        Set<String> agents = new LinkedHashSet<>();
+        for (var loc : locations) {
+            agents.add(loc.getAgentId());
+        }
+        return agents;
     }
 
     /**
@@ -621,6 +662,157 @@ public final class SkillsToolWindowPanel extends JPanel implements Disposable {
             SkillJarArtifact artifact = SkillsToolWindowPanel.this.selectedArtifact();
             if (artifact != null) {
                 copyToClipboard(artifact.getCoordinate().toCoordinateString());
+            }
+        }
+    }
+
+    /**
+     * 右键 "Extract to ▸" 子菜单, 仅在选中 skill 时显示.
+     *
+     * <p>子项: 6 个预设 Agent + Custom Directory; 选中后调用
+     * {@link SkillExportInteraction#exportSingle} 走完整 6 状态流程.</p>
+     */
+    private final class ExtractSkillToGroup extends DefaultActionGroup {
+
+        ExtractSkillToGroup() {
+            super(
+                SkillsJarsHelperBundle.messagePointer("toolwindow.action.extractSkillTo.title"),
+                SkillsJarsHelperBundle.messagePointer("toolwindow.action.extractSkillTo.description"),
+                AllIcons.Actions.Download
+            );
+            this.setPopup(true);
+        }
+
+        @Override
+        public @NotNull ActionUpdateThread getActionUpdateThread() {
+            return ActionUpdateThread.EDT;
+        }
+
+        @Override
+        public void update(@NotNull AnActionEvent e) {
+            e.getPresentation().setEnabledAndVisible(SkillsToolWindowPanel.this.selectedSkill() != null);
+        }
+
+        @Override
+        public AnAction @NotNull [] getChildren(@Nullable AnActionEvent e) {
+            return SkillsToolWindowPanel.this.buildExtractChildren(false).toArray(AnAction.EMPTY_ARRAY);
+        }
+    }
+
+    /**
+     * 右键 "Extract all skills to ▸" 子菜单, 仅在选中 artifact 时显示.
+     */
+    private final class ExtractArtifactToGroup extends DefaultActionGroup {
+
+        ExtractArtifactToGroup() {
+            super(
+                SkillsJarsHelperBundle.messagePointer("toolwindow.action.extractArtifactTo.title"),
+                SkillsJarsHelperBundle.messagePointer("toolwindow.action.extractArtifactTo.description"),
+                AllIcons.Actions.Download
+            );
+            this.setPopup(true);
+        }
+
+        @Override
+        public @NotNull ActionUpdateThread getActionUpdateThread() {
+            return ActionUpdateThread.EDT;
+        }
+
+        @Override
+        public void update(@NotNull AnActionEvent e) {
+            Object user = SkillsTreeModel.userObject(SkillsToolWindowPanel.this.tree.getSelectionPath());
+            e.getPresentation().setEnabledAndVisible(user instanceof SkillsTreeModel.ArtifactNode);
+        }
+
+        @Override
+        public AnAction @NotNull [] getChildren(@Nullable AnActionEvent e) {
+            return SkillsToolWindowPanel.this.buildExtractChildren(true).toArray(AnAction.EMPTY_ARRAY);
+        }
+    }
+
+    /**
+     * 构造 Extract to 子菜单的子项: 6 个预设 + Custom Directory.
+     *
+     * @param batch true 表示批量导出整个 artifact, false 表示单个 skill
+     */
+    @NotNull
+    private List<AnAction> buildExtractChildren(boolean batch) {
+        List<AnAction> children = new ArrayList<>();
+        var targets = SkillsTreeModel.userObject(this.tree.getSelectionPath()) == null
+            ? List.<SkillTargetDirectory>of()
+            : this.exportInteraction == null ? List.<SkillTargetDirectory>of()
+                : dev.dong4j.idea.skillsjars.helper.export.TargetDirectoryDetector.detect(this.project);
+        for (SkillTargetDirectory target : targets) {
+            children.add(new ExtractToTargetAction(target, batch));
+        }
+        children.add(new ExtractToCustomAction(batch));
+        return children;
+    }
+
+    /**
+     * Extract to <预设 Agent>.
+     */
+    private final class ExtractToTargetAction extends AnAction {
+
+        @NotNull private final SkillTargetDirectory target;
+        private final boolean batch;
+
+        ExtractToTargetAction(@NotNull SkillTargetDirectory target, boolean batch) {
+            super(target.getDisplayName());
+            this.target = target;
+            this.batch = batch;
+        }
+
+        @Override
+        public @NotNull ActionUpdateThread getActionUpdateThread() {
+            return ActionUpdateThread.EDT;
+        }
+
+        @Override
+        public void actionPerformed(@NotNull AnActionEvent e) {
+            SkillsToolWindowPanel.this.runExport(this.target, this.batch);
+        }
+    }
+
+    /**
+     * Extract to "Custom Directory...".
+     */
+    private final class ExtractToCustomAction extends AnAction {
+
+        private final boolean batch;
+
+        ExtractToCustomAction(boolean batch) {
+            super(SkillsJarsHelperBundle.messagePointer("toolwindow.action.extractTo.custom"));
+            this.batch = batch;
+        }
+
+        @Override
+        public @NotNull ActionUpdateThread getActionUpdateThread() {
+            return ActionUpdateThread.EDT;
+        }
+
+        @Override
+        public void actionPerformed(@NotNull AnActionEvent e) {
+            SkillTargetDirectory custom = SkillsToolWindowPanel.this.exportInteraction.askCustomDirectory();
+            if (custom != null) {
+                SkillsToolWindowPanel.this.runExport(custom, this.batch);
+            }
+        }
+    }
+
+    /**
+     * 派发到 SkillExportInteraction 的单个/批量入口.
+     */
+    private void runExport(@NotNull SkillTargetDirectory target, boolean batch) {
+        if (batch) {
+            SkillJarArtifact artifact = this.selectedArtifact();
+            if (artifact != null) {
+                this.exportInteraction.exportArtifact(artifact, target);
+            }
+        } else {
+            SkillsTreeModel.SkillNode node = this.selectedSkill();
+            if (node != null) {
+                this.exportInteraction.exportSingle(node.artifact(), node.skill(), target);
             }
         }
     }

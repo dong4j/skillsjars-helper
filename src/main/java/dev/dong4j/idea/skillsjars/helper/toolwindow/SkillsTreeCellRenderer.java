@@ -5,9 +5,14 @@ import com.intellij.ui.ColoredTreeCellRenderer;
 import com.intellij.ui.SimpleTextAttributes;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import javax.swing.JTree;
 import javax.swing.tree.DefaultMutableTreeNode;
+
+import java.util.Collection;
+import java.util.Collections;
+import java.util.function.Function;
 
 import dev.dong4j.idea.skillsjars.helper.api.model.SkillJarArtifact;
 import dev.dong4j.idea.skillsjars.helper.api.model.SkillSourceType;
@@ -31,6 +36,24 @@ import icons.SkillsJarsHelperIcons;
  * @since 1.0.0
  */
 final class SkillsTreeCellRenderer extends ColoredTreeCellRenderer {
+
+    /**
+     * skill → 已安装 agentId 集合 的解析器.
+     *
+     * <p>由 panel 注入, 通常背后是 {@link dev.dong4j.idea.skillsjars.helper.service.InstallationRegistryService}.
+     * 解析器外部一次性查询好快照后传 lambda 进来, 渲染时同步访问, 避免 renderer 持有
+     * service 引用. </p>
+     */
+    @NotNull
+    private Function<SkillsTreeModel.SkillNode, Collection<String>> installedAgentsResolver = node -> Collections.emptyList();
+
+    /**
+     * 注入安装状态查询器. 调用方 (面板) 在订阅 InstallationRegistry 变化后, 改完
+     * resolver 别忘了 {@code tree.repaint()}.
+     */
+    void setInstalledAgentsResolver(@NotNull Function<SkillsTreeModel.SkillNode, Collection<String>> resolver) {
+        this.installedAgentsResolver = resolver;
+    }
 
     @Override
     public void customizeCellRenderer(@NotNull JTree tree,
@@ -64,6 +87,21 @@ final class SkillsTreeCellRenderer extends ColoredTreeCellRenderer {
     private void renderSkill(@NotNull SkillsTreeModel.SkillNode node) {
         this.append(node.skill().getName());
         this.setIcon(SkillsJarsHelperIcons.SKILLSJARS_HELPER_16);
+        // 安装徽标: 灰色 "· installed: claude, codex"
+        // 把多个 agent 收敛成一个紧凑标签, 节点行不至于过宽.
+        String badge = formatInstalledBadge(this.installedAgentsResolver.apply(node));
+        if (badge != null) {
+            this.append("  ");
+            this.append(badge, SimpleTextAttributes.GRAYED_ATTRIBUTES);
+        }
+    }
+
+    @Nullable
+    private static String formatInstalledBadge(@NotNull Collection<String> agentIds) {
+        if (agentIds.isEmpty()) {
+            return null;
+        }
+        return "· installed: " + String.join(", ", agentIds);
     }
 
     /**
