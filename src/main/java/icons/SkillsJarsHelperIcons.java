@@ -41,35 +41,34 @@ public class SkillsJarsHelperIcons {
 
     // ========== Agent 安装状态徽标图标 (16x16) ==========
     //
-    // 各 Agent 的官方品牌图标, 用于 ToolWindow 树叶子的右侧徽标, 表明该 skill 已安装到对应
-    // Agent. 全部品牌图标 (Claude / Codex / Junie / Cursor / Gemini / Qoder / Trae /
-    // CodeBuddy ...) 来自 @lobehub/icons 静态 SVG (MIT, github.com/lobehub/lobe-icons),
-    // 仅做尺寸/无关属性的最小裁剪, path 数据与渐变保持原样; 详细版权声明与文件清单见项目根
-    // NOTICE 文件.
+    // 各 Agent 的品牌图标, 用于 ToolWindow 树叶子的右侧徽标, 表明该 skill 已安装到对应
+    // Agent. 资产为 PNG 透明背景, 经 Lanczos 缩小到 16/32 px.
     //
-    // 主题策略: 彩色品牌色 (-color) 优先用于识别度强的 Logo (claude / junie / gemini /
-    // qoder / trae / codebuddy ...), light/dark 都能看清; 单色 mono 版 (fill="currentColor")
-    // 用于本身就是单色 logo 的品牌 (codex / cursor ...), 自动跟随 IDEA 主题反相; 通用
-    // agents 没有官方资产, 使用项目自绘的几何兜底图标 (六边形 + 节点).
+    // HiDPI 约定: 每个图标提供两份, name.png (16x16) + name@2x.png (32x32),
+    // IDEA 在 200% 缩放屏 (Retina) 上自动加载 @2x 版本; IconLoader 只需指向 16x16
+    // 路径, @2x 自动按命名约定解析.
+    //
+    // 主题策略: 全部使用品牌彩色 PNG, 不参与 IDEA 主题反相 — 品牌色本身就是识别度,
+    // 强行单色化反而失真. 通用 agents 是兜底图.
 
-    /** Claude (Anthropic). 来源: @lobehub/icons claude-color.svg. */
-    public static final Icon AGENT_CLAUDE = load("/icons/agents/claude.svg");
-    /** Codex (OpenAI). 来源: @lobehub/icons codex.svg (mono, currentColor). */
-    public static final Icon AGENT_CODEX = load("/icons/agents/codex.svg");
-    /** Junie (JetBrains). 来源: @lobehub/icons junie-color.svg. */
-    public static final Icon AGENT_JUNIE = load("/icons/agents/junie.svg");
-    /** Cursor. 来源: @lobehub/icons cursor.svg (mono, currentColor). */
-    public static final Icon AGENT_CURSOR = load("/icons/agents/cursor.svg");
-    /** Gemini (Google). 来源: @lobehub/icons gemini-color.svg. */
-    public static final Icon AGENT_GEMINI = load("/icons/agents/gemini.svg");
-    /** Qoder (阿里). 来源: @lobehub/icons qoder-color.svg. */
-    public static final Icon AGENT_QODER = load("/icons/agents/qoder.svg");
-    /** Trae (字节). 来源: @lobehub/icons trae-color.svg. */
-    public static final Icon AGENT_TRAE = load("/icons/agents/trae.svg");
-    /** CodeBuddy (腾讯). 来源: @lobehub/icons codebuddy-color.svg. */
-    public static final Icon AGENT_CODEBUDDY = load("/icons/agents/codebuddy.svg");
-    /** Agents (通用). 项目自绘几何兜底图标, 无官方品牌. */
-    public static final Icon AGENT_AGENTS = load("/icons/agents/agents.svg");
+    /** Claude (Anthropic). */
+    public static final Icon AGENT_CLAUDE = load("/icons/agents/claude.png");
+    /** Codex (OpenAI). */
+    public static final Icon AGENT_CODEX = load("/icons/agents/codex.png");
+    /** Junie (JetBrains). */
+    public static final Icon AGENT_JUNIE = load("/icons/agents/junie.png");
+    /** Cursor. */
+    public static final Icon AGENT_CURSOR = load("/icons/agents/cursor.png");
+    /** Gemini (Google). */
+    public static final Icon AGENT_GEMINI = load("/icons/agents/gemini.png");
+    /** Qoder (阿里). */
+    public static final Icon AGENT_QODER = load("/icons/agents/qoder.png");
+    /** Trae (字节). */
+    public static final Icon AGENT_TRAE = load("/icons/agents/trae.png");
+    /** CodeBuddy (腾讯). */
+    public static final Icon AGENT_CODEBUDDY = load("/icons/agents/codebuddy.png");
+    /** Agents (通用兜底, 无官方品牌). */
+    public static final Icon AGENT_AGENTS = load("/icons/agents/agents.png");
 
     /**
      * 按 agentId 取对应的徽标图标.
