@@ -186,7 +186,7 @@ public final class SkillsToolWindowPanel extends JPanel implements Disposable {
                 TreePath path = this.getPathForLocation(event.getX(), event.getY());
                 Object user = SkillsTreeModel.userObject(path);
                 if (user instanceof SkillsTreeModel.SkillNode skillNode) {
-                    return buildSkillTooltip(skillNode);
+                    return SkillsToolWindowPanel.this.buildSkillTooltip(skillNode);
                 }
                 if (user instanceof SkillsTreeModel.ArtifactNode artifactNode) {
                     return buildArtifactTooltip(artifactNode);
@@ -445,10 +445,13 @@ public final class SkillsToolWindowPanel extends JPanel implements Disposable {
 
     /**
      * 构造 skill 节点的 HTML tooltip.
-     * <p>只展示存在的字段, 缺失字段不输出对应行.</p>
+     *
+     * <p>只展示存在的字段, 缺失字段不输出对应行. 兼顾"图标识别度有限"的兜底:
+     * skill 已经安装到了哪些 Agent 单独以一行明确文本列出 (Installed: claude, codex...),
+     * 让用户在图标无法精确辨认时也能确认状态.</p>
      */
     @NotNull
-    private static String buildSkillTooltip(@NotNull SkillsTreeModel.SkillNode node) {
+    private String buildSkillTooltip(@NotNull SkillsTreeModel.SkillNode node) {
         SkillDescriptor skill = node.skill();
         StringBuilder sb = new StringBuilder("<html><b>");
         sb.append(escape(skill.getName())).append("</b>");
@@ -458,6 +461,12 @@ public final class SkillsToolWindowPanel extends JPanel implements Disposable {
         if (!skill.getAllowedTools().isEmpty()) {
             sb.append("<br><small>Allowed: ")
                 .append(escape(String.join(", ", skill.getAllowedTools())))
+                .append("</small>");
+        }
+        var agentIds = this.installedAgents(node);
+        if (!agentIds.isEmpty()) {
+            sb.append("<br><small>")
+                .append(escape(SkillsJarsHelperBundle.message("toolwindow.tooltip.installed", String.join(", ", agentIds))))
                 .append("</small>");
         }
         sb.append("<br><small>")

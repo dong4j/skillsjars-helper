@@ -22,9 +22,11 @@
             <code>artifact</code> + <code>skillRoot</code> + per-file <code>sha256</code>; used to detect upgrades
             and local edits without a heavy index.
         </li>
-        <li><b>Installation badges</b>: skill leaves now show a gray
-            <code>&middot; installed: claude, codex</code> badge; an <code>InstallationRegistryService</code>
-            scans the six preset directories on startup and after every export.
+        <li><b>Installation badges</b>: skill leaves now show a row of brand icons (Claude, Codex, Junie, Cursor,
+            Gemini, Agents, plus a folder icon for custom directories) appended to the leaf icon &mdash; a single
+            row that stays compact even when one skill is installed into many agents at once. Tooltip still
+            spells out the agent ids in plain text. An <code>InstallationRegistryService</code> scans the six
+            preset directories on startup and after every export.
         </li>
         <li><b>Tests</b>: <code>ExportNamingTest</code>, <code>ManifestJsonTest</code>, <code>ExportPlannerTest</code>
             covering all six install states; <code>SkillJarParserTest</code> extended to verify file enumeration.
@@ -49,9 +51,10 @@
         <li><b>Manifest <code>.skillsjars-helper.json</code></b>: 写入每个导出目录, 包含 <code>artifact</code> +
             <code>skillRoot</code> + 每文件 <code>sha256</code>, 用于判断升级与本地修改, 无需重型索引.
         </li>
-        <li><b>安装徽标</b>: skill 叶子节点行尾显示灰色
-            <code>&middot; installed: claude, codex</code>; <code>InstallationRegistryService</code>
-            在启动时与每次导出后重扫 6 个预设目录的 manifest.
+        <li><b>安装徽标</b>: skill 叶子节点的图标右侧追加一组各 Agent 品牌图标 (Claude / Codex / Junie / Cursor /
+            Gemini / Agents, 自定义目录用文件夹图标), 横向合成单一行图标; 即便一个 skill 同时安装到多个 Agent,
+            列表也不会被文本撑长. tooltip 仍以纯文本明确列出 agent id, 兜底图标识别度. 启动与每次导出后,
+            <code>InstallationRegistryService</code> 自动重扫 6 个预设目录的 manifest.
         </li>
         <li><b>测试</b>: 新增 <code>ExportNamingTest</code> / <code>ManifestJsonTest</code> /
             <code>ExportPlannerTest</code>, 完整覆盖 6 种安装状态; <code>SkillJarParserTest</code> 增补

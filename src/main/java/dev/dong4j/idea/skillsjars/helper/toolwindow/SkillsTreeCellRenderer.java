@@ -2,16 +2,19 @@ package dev.dong4j.idea.skillsjars.helper.toolwindow;
 
 import com.intellij.icons.AllIcons;
 import com.intellij.ui.ColoredTreeCellRenderer;
+import com.intellij.ui.RowIcon;
 import com.intellij.ui.SimpleTextAttributes;
 
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
+import javax.swing.Icon;
 import javax.swing.JTree;
 import javax.swing.tree.DefaultMutableTreeNode;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.function.Function;
 
 import dev.dong4j.idea.skillsjars.helper.api.model.SkillJarArtifact;
@@ -26,7 +29,9 @@ import icons.SkillsJarsHelperIcons;
  * <ul>
  *   <li>Artifact 节点: 主标签为 {@code artifactId:version}, 灰色后缀显示来源类型 (Maven / Maven Plugin
  *       等), 图标用 IDEA 内置的 {@code AllIcons.Nodes.PpLib} (jar/library 标准图标).</li>
- *   <li>Skill 节点: 只显示 skill 名, 图标用本插件的 16x16 图标, 风格上与 jar 节点形成层级.</li>
+ *   <li>Skill 节点: 只显示 skill 名, 图标在 skill 主图标的基础上, 用 {@link RowIcon} 横向附加每个
+ *       已安装到的 Agent 的品牌徽标. 之前的 "· installed: claude, codex" 文本已被替换以节省横向空间;
+ *       多徽标场景 (例如 4-5 个 Agent 并存) 也能保持节点行紧凑. </li>
  * </ul>
  *
  * <p>不在节点上塞 description / allowed-tools, 那部分信息走 tooltip 与状态栏, 保持节点简洁.</p>
@@ -86,22 +91,33 @@ final class SkillsTreeCellRenderer extends ColoredTreeCellRenderer {
 
     private void renderSkill(@NotNull SkillsTreeModel.SkillNode node) {
         this.append(node.skill().getName());
-        this.setIcon(SkillsJarsHelperIcons.SKILLSJARS_HELPER_16);
-        // 安装徽标: 灰色 "· installed: claude, codex"
-        // 把多个 agent 收敛成一个紧凑标签, 节点行不至于过宽.
-        String badge = formatInstalledBadge(this.installedAgentsResolver.apply(node));
-        if (badge != null) {
-            this.append("  ");
-            this.append(badge, SimpleTextAttributes.GRAYED_ATTRIBUTES);
-        }
+        // 安装徽标用图标替代文本: skill 主图标 + 已安装到的每个 Agent 各一个品牌图标,
+        // 横向合成 RowIcon 一起作为节点的左侧图标. 多徽标时仍紧凑, 不会让节点行被文本撑长.
+        Collection<String> agentIds = this.installedAgentsResolver.apply(node);
+        this.setIcon(buildSkillIcon(agentIds));
     }
 
-    @Nullable
-    private static String formatInstalledBadge(@NotNull Collection<String> agentIds) {
+    /**
+     * 构造 skill 节点的复合图标: 主图标 + 各 agent 徽标横排.
+     */
+    @NotNull
+    private static Icon buildSkillIcon(@NotNull Collection<String> agentIds) {
+        Icon main = SkillsJarsHelperIcons.SKILLSJARS_HELPER_16;
         if (agentIds.isEmpty()) {
-            return null;
+            return main;
         }
-        return "· installed: " + String.join(", ", agentIds);
+        List<Icon> resolved = new ArrayList<>(agentIds.size() + 1);
+        resolved.add(main);
+        for (String agentId : agentIds) {
+            Icon icon = SkillsJarsHelperIcons.forAgent(agentId);
+            if (icon != null) {
+                resolved.add(icon);
+            }
+        }
+        if (resolved.size() == 1) {
+            return main;
+        }
+        return new RowIcon(resolved.toArray(new Icon[0]));
     }
 
     /**
