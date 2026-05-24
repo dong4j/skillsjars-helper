@@ -2,10 +2,10 @@
     <h3>2026.1.2000</h3>
     <ul>
         <li><b>Skill export</b>: a public project-level <code>SkillExportService</code> mirrors
-            <code>SkillRegistry</code>; right-click any skill to export it (or its whole jar) to one of seven preset
+            <code>SkillRegistry</code>; right-click any skill to export it (or its whole jar) to one of eight preset
             Agent skills directories (<code>.claude/skills</code>, <code>.codex/skills</code>,
             <code>.junie/skills</code>, <code>.agents/skills</code>, <code>.cursor/skills</code>,
-            <code>.gemini/skills</code>, <code>.qoder/skills</code>) or a custom directory.
+            <code>.gemini/skills</code>, <code>.qoder/skills</code>, <code>.trae/skills</code>) or a custom directory.
         </li>
         <li><b>Naming aligned with Agent Skills spec</b>: the exported folder is named after the
             <code>SKILL.md</code> frontmatter <code>name</code>, not the flattened
@@ -23,11 +23,11 @@
             and local edits without a heavy index.
         </li>
         <li><b>Installation badges</b>: skill leaves show a row of official brand icons (Claude, Codex, Junie,
-            Cursor, Gemini, Qoder, plus a folder icon for custom directories) <b>right-aligned</b> on the same
+            Cursor, Gemini, Qoder, Trae, plus a folder icon for custom directories) <b>right-aligned</b> on the same
             row as the skill name &mdash; the cell is stretched to the tree width so badges line up across rows
             even when names have different lengths. Brand assets come from
             <a href="https://github.com/lobehub/lobe-icons"><code>@lobehub/icons</code></a> (MIT). Tooltip still
-            spells out the agent ids in plain text. An <code>InstallationRegistryService</code> scans the seven
+            spells out the agent ids in plain text. An <code>InstallationRegistryService</code> scans the eight
             preset directories on startup and after every export.
         </li>
         <li><b>Tests</b>: <code>ExportNamingTest</code>, <code>ManifestJsonTest</code>, <code>ExportPlannerTest</code>
@@ -37,9 +37,10 @@
 
     <ul>
         <li><b>Skill 导出</b>: 新增项目级 <code>SkillExportService</code>, 与 <code>SkillRegistry</code> 对称暴露;
-            右键任意 skill 可导出到 7 个预设 Agent 目录 (<code>.claude/skills</code>, <code>.codex/skills</code>,
+            右键任意 skill 可导出到 8 个预设 Agent 目录 (<code>.claude/skills</code>, <code>.codex/skills</code>,
             <code>.junie/skills</code>, <code>.agents/skills</code>, <code>.cursor/skills</code>,
-            <code>.gemini/skills</code>, <code>.qoder/skills</code>) 或自定义目录, 整个 jar 也可一键批量导出.
+            <code>.gemini/skills</code>, <code>.qoder/skills</code>, <code>.trae/skills</code>) 或自定义目录,
+            整个 jar 也可一键批量导出.
         </li>
         <li><b>命名对齐 Agent Skills 规范</b>: 导出目录直接采用 <code>SKILL.md</code> frontmatter 的
             <code>name</code>, 不再使用 <code>skillsjars__org__repo__</code> 扁平化前缀, 与
@@ -54,11 +55,11 @@
             <code>skillRoot</code> + 每文件 <code>sha256</code>, 用于判断升级与本地修改, 无需重型索引.
         </li>
         <li><b>安装徽标</b>: skill 叶子节点 <b>右对齐</b> 在 skill name 同一行尾, 显示一组各 Agent 官方品牌图标
-            (Claude / Codex / Junie / Cursor / Gemini / Qoder, 自定义目录用文件夹图标); cell 宽度被强制撑到
-            tree 宽度, 不同节点的徽标列视觉对齐. 品牌资产取自
+            (Claude / Codex / Junie / Cursor / Gemini / Qoder / Trae, 自定义目录用文件夹图标); cell 宽度被强制
+            撑到 tree 宽度, 不同节点的徽标列视觉对齐. 品牌资产取自
             <a href="https://github.com/lobehub/lobe-icons"><code>@lobehub/icons</code></a> (MIT). tooltip 仍以
             纯文本明确列出 agent id, 兜底图标识别度. 启动与每次导出后, <code>InstallationRegistryService</code>
-            自动重扫 7 个预设目录的 manifest.
+            自动重扫 8 个预设目录的 manifest.
         </li>
         <li><b>测试</b>: 新增 <code>ExportNamingTest</code> / <code>ManifestJsonTest</code> /
             <code>ExportPlannerTest</code>, 完整覆盖 6 种安装状态; <code>SkillJarParserTest</code> 增补
