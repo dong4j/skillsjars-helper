@@ -22,3 +22,6 @@ site/
 *.pem
 *.p12
 *.jks
+
+# Claude Code local config (per-machine permissions); skills under .claude/skills/ are versioned
+.claude/settings.local.json
