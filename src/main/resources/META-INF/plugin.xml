@@ -44,6 +44,15 @@
             serviceInterface="dev.dong4j.idea.skillsjars.helper.api.SkillRegistry"
             serviceImplementation="dev.dong4j.idea.skillsjars.helper.service.SkillRegistryService"/>
 
+        <!-- 项目级 SkillExportService 服务: 暴露 skill 导出能力. -->
+        <projectService
+            serviceInterface="dev.dong4j.idea.skillsjars.helper.api.SkillExportService"
+            serviceImplementation="dev.dong4j.idea.skillsjars.helper.service.SkillExportServiceImpl"/>
+
+        <!-- 项目级 InstallationRegistry 服务: 维护 6 个预设 Agent 目录的安装状态索引. -->
+        <projectService
+            serviceImplementation="dev.dong4j.idea.skillsjars.helper.service.InstallationRegistryService"/>
+
         <!-- Agent Skills Tool Window. anchor=right 与依赖类工具更接近. -->
         <toolWindow
             id="Agent Skills"
