@@ -4,6 +4,7 @@ import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -84,7 +85,12 @@ public final class SkillExportServiceImpl implements SkillExportService, Disposa
     @NotNull
     public Disposable addInstallationListener(@NotNull SkillInstallationListener listener) {
         this.listeners.add(listener);
-        return () -> this.listeners.remove(listener);
+        // 与 SkillRegistryService 风格统一: 把订阅 disposable 挂到 service 自身 (本身
+        // 也是 Disposable), 项目关闭时即使调用方忘记 dispose, 也能在 service dispose 阶段
+        // 一次性回收, 避免长会话里的 listener 累积泄漏.
+        Disposable disposable = () -> this.listeners.remove(listener);
+        Disposer.register(this, disposable);
+        return disposable;
     }
 
     /**

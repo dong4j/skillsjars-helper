@@ -146,12 +146,18 @@ public final class InstallationRegistryService implements Disposable {
 
     /**
      * 订阅安装状态变化.
+     *
+     * <p>返回的 {@link Disposable} 已自动挂到 service 自身, 调用方仍应 {@code Disposer.register}
+     * 到自己组件的生命周期上以求精确控制; 即使忘记, 项目关闭时 service dispose 也会一次性回收,
+     * 不会留下悬挂 listener.</p>
      */
     @NotNull
     public Disposable addListener(@NotNull SkillInstallationListener listener) {
         this.ensureSubscribed();
         this.listeners.add(listener);
-        return () -> this.listeners.remove(listener);
+        Disposable disposable = () -> this.listeners.remove(listener);
+        Disposer.register(this, disposable);
+        return disposable;
     }
 
     /**
