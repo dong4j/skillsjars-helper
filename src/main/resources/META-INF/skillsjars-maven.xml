@@ -1,0 +1,13 @@
+<!--
+    Maven 集成可选片段.
+
+    plugin.xml 通过 <depends optional="true" config-file="skillsjars-maven.xml">org.jetbrains.idea.maven</depends>
+    引用本文件. 当 IDE 启用了 Maven 插件时, 此处的扩展点才会被加载;
+    Maven 插件缺失时整个文件被忽略, 不影响其他扫描器工作.
+-->
+<idea-plugin>
+    <extensions defaultExtensionNs="dev.dong4j.idea.skillsjars.helper">
+        <skillSourceScanner
+            implementation="dev.dong4j.idea.skillsjars.helper.scanner.MavenPluginDependencyScanner"/>
+    </extensions>
+</idea-plugin>
