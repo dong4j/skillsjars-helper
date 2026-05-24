@@ -767,7 +767,9 @@ public final class SkillsToolWindowPanel extends JPanel implements Disposable {
         private final boolean batch;
 
         ExtractToTargetAction(@NotNull SkillTargetDirectory target, boolean batch) {
-            super(target.getDisplayName());
+            // 子菜单项前置 Agent 品牌图标, 与 ToolWindow 树叶子的徽标视觉对齐;
+            // 未知 agentId 退化为 null, IDEA 会自动留空, 不影响菜单可用性
+            super(target.getDisplayName(), null, SkillsJarsHelperIcons.forAgent(target.getAgentId()));
             this.target = target;
             this.batch = batch;
         }
@@ -791,7 +793,12 @@ public final class SkillsToolWindowPanel extends JPanel implements Disposable {
         private final boolean batch;
 
         ExtractToCustomAction(boolean batch) {
-            super(SkillsJarsHelperBundle.messagePointer("toolwindow.action.extractTo.custom"));
+            // 自定义目录沿用 forAgent(AGENT_CUSTOM) 的兜底图标 (AllIcons.Nodes.Folder),
+            // 与其它预设项一致从 SkillsJarsHelperIcons 单一权威源取, 避免在 UI 层硬编码 AllIcons
+            super(
+                SkillsJarsHelperBundle.messagePointer("toolwindow.action.extractTo.custom"),
+                SkillsJarsHelperIcons.forAgent(SkillTargetDirectory.AGENT_CUSTOM)
+            );
             this.batch = batch;
         }
 
