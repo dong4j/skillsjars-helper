@@ -1,6 +1,7 @@
 package dev.dong4j.idea.skillsjars.helper.toolwindow;
 
 import com.intellij.icons.AllIcons;
+import com.intellij.ide.BrowserUtil;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.ide.CopyPasteManager;
 import com.intellij.openapi.actionSystem.ActionManager;
@@ -47,8 +48,10 @@ import java.awt.event.MouseEvent;
 import java.util.Collections;
 import java.util.List;
 
+import dev.dong4j.idea.skillsjars.helper.PluginContents;
 import dev.dong4j.idea.skillsjars.helper.api.SkillRegistry;
 import dev.dong4j.idea.skillsjars.helper.api.SkillRegistryListener;
+import dev.dong4j.idea.skillsjars.helper.api.SkillExportService;
 import dev.dong4j.idea.skillsjars.helper.api.model.SkillDescriptor;
 import dev.dong4j.idea.skillsjars.helper.api.model.SkillJarArtifact;
 import dev.dong4j.idea.skillsjars.helper.api.model.SkillTargetDirectory;
@@ -315,6 +318,8 @@ public final class SkillsToolWindowPanel extends JPanel implements Disposable {
         group.addSeparator();
         group.add(new ExpandAllAction());
         group.add(new CollapseAllAction());
+        group.addSeparator();
+        group.add(new FeedbackAction());
 
         ActionToolbar toolbar = ActionManager.getInstance().createActionToolbar(TOOLBAR_PLACE, group, true);
         toolbar.setTargetComponent(this);
@@ -589,6 +594,35 @@ public final class SkillsToolWindowPanel extends JPanel implements Disposable {
     }
 
     /**
+     * 工具栏 "Feedback / Report an Issue" 动作.
+     *
+     * <p>用 {@link BrowserUtil#browse(String)} 走 IDEA 内置浏览器适配, 自动尊重用户在
+     * Settings | Web Browsers 里配置的默认浏览器. URL 单一权威源在
+     * {@link PluginContents#FEEDBACK_URL}, 后续若改用专门的 issue 模板或 discussion
+     * 子页, 只需要改常量, 不需要动 UI 层.</p>
+     */
+    private static final class FeedbackAction extends AnAction {
+
+        FeedbackAction() {
+            super(
+                SkillsJarsHelperBundle.messagePointer("toolwindow.action.feedback.title"),
+                SkillsJarsHelperBundle.messagePointer("toolwindow.action.feedback.description"),
+                AllIcons.General.Web
+            );
+        }
+
+        @Override
+        public @NotNull ActionUpdateThread getActionUpdateThread() {
+            return ActionUpdateThread.BGT;
+        }
+
+        @Override
+        public void actionPerformed(@NotNull AnActionEvent e) {
+            BrowserUtil.browse(PluginContents.FEEDBACK_URL);
+        }
+    }
+
+    /**
      * 右键菜单基类: 仅当选中节点是 skill 时启用.
      */
     private abstract class SelectedSkillAction extends AnAction {
@@ -746,17 +780,22 @@ public final class SkillsToolWindowPanel extends JPanel implements Disposable {
     /**
      * 构造 Extract to 子菜单的子项: 所有预设 Agent + Custom Directory.
      *
+     * <p>当没有选中节点时返回单一 "Custom Directory" 兜底, 让用户即使不选 skill 也能
+     * 通过 "Extract to ▸" 的入口选目录 (DefaultActionGroup 会因 update() 把整个菜单
+     * 设为不可见, 实际进不到这里, 但保留兜底语义防御 IDEA 提前调用 getChildren).</p>
+     *
      * @param batch true 表示批量导出整个 artifact, false 表示单个 skill
      */
     @NotNull
     private List<AnAction> buildExtractChildren(boolean batch) {
         List<AnAction> children = new ArrayList<>();
-        var targets = SkillsTreeModel.userObject(this.tree.getSelectionPath()) == null
-            ? List.<SkillTargetDirectory>of()
-            : this.exportInteraction == null ? List.<SkillTargetDirectory>of()
-                : dev.dong4j.idea.skillsjars.helper.export.TargetDirectoryDetector.detect(this.project);
-        for (SkillTargetDirectory target : targets) {
-            children.add(new ExtractToTargetAction(target, batch));
+        if (SkillsTreeModel.userObject(this.tree.getSelectionPath()) != null) {
+            // 走对外 API SkillExportService.detectTargets, 而不是直接调 export 包内的 detector,
+            // 这样 toolwindow 与 export 实现解耦; 新加 Agent 时数据驱动, 不需要改这里.
+            SkillExportService service = SkillExportService.getInstance(this.project);
+            for (SkillTargetDirectory target : service.detectTargets(this.project)) {
+                children.add(new ExtractToTargetAction(target, batch));
+            }
         }
         children.add(new ExtractToCustomAction(batch));
         return children;
