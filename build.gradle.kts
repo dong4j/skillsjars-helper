@@ -5,7 +5,6 @@ plugins {
 
 group = providers.gradleProperty("pluginGroup").get()
 version = providers.gradleProperty("pluginVersion").get()
-val kitVersion: String = providers.gradleProperty("kitVersion").get()
 
 repositories {
     mavenCentral()
@@ -53,11 +52,16 @@ intellijPlatform {
 dependencies {
     // IntelliJ Platform
     intellijPlatform {
-        // create(providers.gradleProperty("platformType"), providers.gradleProperty("platformVersion"))
-        intellijIdea(providers.gradleProperty("platformVersion"))
+        // 社区版
+        create(providers.gradleProperty("platformType"), providers.gradleProperty("platformVersion"))
+        // 2026 使用
+        // intellijIdea(providers.gradleProperty("platformVersion"))
 
         // Bundled plugins
         bundledPlugin("com.intellij.java")
+        // Maven 插件 (社区版自带), 用于扫描 skillsjars-maven-plugin 的 <dependencies>.
+        // 该依赖只用于编译期; 通过 plugin.xml 中 <depends optional="true" ...> 控制运行时是否启用.
+        bundledPlugin("org.jetbrains.idea.maven")
 
 
         // Marketplace ZIP Signer for plugin signing
@@ -70,21 +74,15 @@ dependencies {
         testFramework(org.jetbrains.intellij.platform.gradle.TestFrameworkType.Platform)
     }
 
-    // Idea Plugin Common 库依赖（本地库，打包时需要包含）
-    implementation("dev.dong4j.zeka.stack:idea-plugin-kit:${kitVersion}")
-
     compileOnly("org.projectlombok:lombok:1.18.32")
     annotationProcessor("org.projectlombok:lombok:1.18.32")
 
     // 测试依赖
     testImplementation("org.junit.jupiter:junit-jupiter:5.9.2")
     testImplementation("org.junit.platform:junit-platform-suite:1.9.2")
-    testImplementation("org.mockito:mockito-core:5.2.0")
-    testImplementation("org.mockito:mockito-junit-jupiter:5.2.0")
+    testImplementation("org.mockito:mockito-core:5.14.2")
+    testImplementation("org.mockito:mockito-junit-jupiter:5.14.2")
     testImplementation("org.assertj:assertj-core:3.24.2")
-
-    testCompileOnly("org.projectlombok:lombok:1.18.32")
-    testAnnotationProcessor("org.projectlombok:lombok:1.18.32")
 }
 
 tasks {
@@ -137,7 +135,7 @@ tasks {
 
     // 热更新
     runIde {
-        jvmArgs = listOf("-XX:AllowEnhancedClassRedefinition")
+        jvmArgs = listOf("-XX:+AllowEnhancedClassRedefinition")
     }
 }
 
