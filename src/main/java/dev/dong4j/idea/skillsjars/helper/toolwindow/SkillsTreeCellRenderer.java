@@ -4,13 +4,23 @@ import com.intellij.icons.AllIcons;
 import com.intellij.ui.ColoredTreeCellRenderer;
 import com.intellij.ui.RowIcon;
 import com.intellij.ui.SimpleTextAttributes;
+import com.intellij.ui.components.JBPanel;
+import com.intellij.util.ui.JBUI;
+import com.intellij.util.ui.UIUtil;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import javax.swing.Icon;
+import javax.swing.JLabel;
 import javax.swing.JTree;
 import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.TreeCellRenderer;
 
+import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -25,22 +35,36 @@ import icons.SkillsJarsHelperIcons;
 /**
  * SkillsJars Tool Window 树视图的单元渲染器.
  *
+ * <p>布局: 一个 {@link BorderLayout} 容器, CENTER 是常规 {@link ColoredTreeCellRenderer}
+ * (画 skill / artifact 图标 + 文本), EAST 是一个 {@link JLabel} 用来显示 "已安装到的 agent 徽标".</p>
+ *
  * <p>渲染规则:</p>
  * <ul>
  *   <li>Artifact 节点: 主标签为 {@code artifactId:version}, 灰色后缀显示来源类型 (Maven / Maven Plugin
- *       等), 图标用 IDEA 内置的 {@code AllIcons.Nodes.PpLib} (jar/library 标准图标).</li>
- *   <li>Skill 节点: 只显示 skill 名, 图标在 skill 主图标的基础上, 用 {@link RowIcon} 横向附加每个
- *       已安装到的 Agent 的品牌徽标. 之前的 "· installed: claude, codex" 文本已被替换以节省横向空间;
- *       多徽标场景 (例如 4-5 个 Agent 并存) 也能保持节点行紧凑. </li>
+ *       等), 图标用 IDEA 内置的 {@code AllIcons.Nodes.PpLib}; 右侧不显示徽标.</li>
+ *   <li>Skill 节点: 只显示 skill 名 (左侧 skill 主图标), 右侧用 {@link RowIcon} 横排显示已安装到的
+ *       每个 Agent 品牌图标. 通过强制把 cell 宽度撑到 tree 宽度, 让 EAST 区域真正贴到 cell 右边,
+ *       多个 skill 行的徽标列视觉上对齐.</li>
  * </ul>
  *
- * <p>不在节点上塞 description / allowed-tools, 那部分信息走 tooltip 与状态栏, 保持节点简洁.</p>
+ * <p>选中态: 由 panel 自画背景 (用 {@link UIUtil#getTreeSelectionBackground(boolean)}),
+ * inner renderer 设为 {@code opaque=false} 避免双层重叠. 文字颜色仍由 inner 的
+ * ColoredTreeCellRenderer 按 selected 自动切换 (白字 / 主题色), SpeedSearch 高亮也保留. </p>
  *
  * @author dong4j
  * @version 1.0.0
  * @since 1.0.0
  */
-final class SkillsTreeCellRenderer extends ColoredTreeCellRenderer {
+final class SkillsTreeCellRenderer extends JBPanel<SkillsTreeCellRenderer> implements TreeCellRenderer {
+
+    /** 右侧徽标与中央文本的间距 (px). */
+    private static final int RIGHT_GAP = 8;
+
+    @NotNull
+    private final InnerRenderer inner = new InnerRenderer();
+
+    @NotNull
+    private final JLabel rightLabel = new JLabel();
 
     /**
      * skill → 已安装 agentId 集合 的解析器.
@@ -50,7 +74,17 @@ final class SkillsTreeCellRenderer extends ColoredTreeCellRenderer {
      * service 引用. </p>
      */
     @NotNull
-    private Function<SkillsTreeModel.SkillNode, Collection<String>> installedAgentsResolver = node -> Collections.emptyList();
+    private Function<SkillsTreeModel.SkillNode, Collection<String>> installedAgentsResolver =
+        node -> Collections.emptyList();
+
+    SkillsTreeCellRenderer() {
+        super(new BorderLayout());
+        setOpaque(false);
+        rightLabel.setOpaque(false);
+        rightLabel.setBorder(JBUI.Borders.empty(0, RIGHT_GAP, 0, 4));
+        add(inner, BorderLayout.CENTER);
+        add(rightLabel, BorderLayout.EAST);
+    }
 
     /**
      * 注入安装状态查询器. 调用方 (面板) 在订阅 InstallationRegistry 变化后, 改完
@@ -61,63 +95,78 @@ final class SkillsTreeCellRenderer extends ColoredTreeCellRenderer {
     }
 
     @Override
-    public void customizeCellRenderer(@NotNull JTree tree,
-                                      Object value,
-                                      boolean selected,
-                                      boolean expanded,
-                                      boolean leaf,
-                                      int row,
-                                      boolean hasFocus) {
-        if (!(value instanceof DefaultMutableTreeNode node)) {
-            return;
-        }
-        Object user = node.getUserObject();
-        if (user instanceof SkillsTreeModel.ArtifactNode artifactNode) {
-            this.renderArtifact(artifactNode);
-            return;
-        }
-        if (user instanceof SkillsTreeModel.SkillNode skillNode) {
-            this.renderSkill(skillNode);
-        }
-    }
+    public Component getTreeCellRendererComponent(@NotNull JTree tree,
+                                                  Object value,
+                                                  boolean selected,
+                                                  boolean expanded,
+                                                  boolean leaf,
+                                                  int row,
+                                                  boolean hasFocus) {
+        // 1. 让 inner 渲染主体: skill icon + name 或 artifact + source 后缀.
+        inner.getTreeCellRendererComponent(tree, value, selected, expanded, leaf, row, hasFocus);
+        // 让 inner 透明, 选中背景由本 panel 统一画, 避免 inner 自己的高亮把右侧徽标盖住一截.
+        inner.setOpaque(false);
 
-    private void renderArtifact(@NotNull SkillsTreeModel.ArtifactNode node) {
-        SkillJarArtifact artifact = node.artifact();
-        this.append(node.toString(), SimpleTextAttributes.REGULAR_ATTRIBUTES);
-        this.append("  ");
-        this.append(formatSource(artifact.getSourceType()), SimpleTextAttributes.GRAYED_ATTRIBUTES);
-        this.setIcon(AllIcons.Nodes.PpLib);
-    }
+        // 2. 算右侧徽标; 仅 skill 节点且有安装位置时显示.
+        Icon rightIcon = computeRightIcon(value);
+        rightLabel.setIcon(rightIcon);
+        rightLabel.setVisible(rightIcon != null);
 
-    private void renderSkill(@NotNull SkillsTreeModel.SkillNode node) {
-        this.append(node.skill().getName());
-        // 安装徽标用图标替代文本: skill 主图标 + 已安装到的每个 Agent 各一个品牌图标,
-        // 横向合成 RowIcon 一起作为节点的左侧图标. 多徽标时仍紧凑, 不会让节点行被文本撑长.
-        Collection<String> agentIds = this.installedAgentsResolver.apply(node);
-        this.setIcon(buildSkillIcon(agentIds));
+        // 3. 选中背景: 整行高亮.
+        if (selected) {
+            setBackground(UIUtil.getTreeSelectionBackground(hasFocus));
+            setOpaque(true);
+        } else {
+            setOpaque(false);
+        }
+
+        // 4. 关键: 把 cell 宽度撑到 tree 可见宽度, 让 EAST 真正贴到 cell 右边. 否则 BorderLayout
+        //    只会把 EAST 紧贴 inner 末尾, 看起来仍像 "图标在 name 后" 而非 "右对齐到树宽".
+        Dimension innerPref = inner.getPreferredSize();
+        int height = innerPref.height;
+        int rightWidth = rightLabel.isVisible() ? rightLabel.getPreferredSize().width : 0;
+        int minWidth = innerPref.width + rightWidth;
+        int width = minWidth;
+        if (tree.getWidth() > 0) {
+            Rectangle bounds = tree.getRowBounds(row);
+            int x = bounds != null ? bounds.x : 0;
+            if (bounds != null && bounds.height > 0) {
+                height = bounds.height;
+            }
+            width = Math.max(minWidth, tree.getWidth() - x);
+        }
+        setPreferredSize(new Dimension(width, height));
+        return this;
     }
 
     /**
-     * 构造 skill 节点的复合图标: 主图标 + 各 agent 徽标横排.
+     * 仅 skill 节点 + 至少有一个有效 agent 图标时返回 RowIcon, 其他情况返回 null.
      */
-    @NotNull
-    private static Icon buildSkillIcon(@NotNull Collection<String> agentIds) {
-        Icon main = SkillsJarsHelperIcons.SKILLSJARS_HELPER_16;
-        if (agentIds.isEmpty()) {
-            return main;
+    @Nullable
+    private Icon computeRightIcon(Object value) {
+        if (!(value instanceof DefaultMutableTreeNode node)) {
+            return null;
         }
-        List<Icon> resolved = new ArrayList<>(agentIds.size() + 1);
-        resolved.add(main);
-        for (String agentId : agentIds) {
-            Icon icon = SkillsJarsHelperIcons.forAgent(agentId);
+        Object user = node.getUserObject();
+        if (!(user instanceof SkillsTreeModel.SkillNode skillNode)) {
+            return null;
+        }
+        Collection<String> agentIds = this.installedAgentsResolver.apply(skillNode);
+        if (agentIds.isEmpty()) {
+            return null;
+        }
+        List<Icon> icons = new ArrayList<>(agentIds.size());
+        for (String id : agentIds) {
+            Icon icon = SkillsJarsHelperIcons.forAgent(id);
             if (icon != null) {
-                resolved.add(icon);
+                icons.add(icon);
             }
         }
-        if (resolved.size() == 1) {
-            return main;
-        }
-        return new RowIcon(resolved.toArray(new Icon[0]));
+        return switch (icons.size()) {
+            case 0 -> null;
+            case 1 -> icons.get(0);
+            default -> new RowIcon(icons.toArray(new Icon[0]));
+        };
     }
 
     /**
@@ -133,5 +182,38 @@ final class SkillsTreeCellRenderer extends ColoredTreeCellRenderer {
             case EXTERNAL_LIBRARY -> "External Library";
             case LOCAL_JAR -> "Local Jar";
         };
+    }
+
+    /**
+     * 内部 renderer: 仅负责画 skill / artifact 的左侧 icon + 文本, 完全不感知徽标.
+     *
+     * <p>选用继承 {@link ColoredTreeCellRenderer} 是为了免费拿到: 选中态文字白色 / SpeedSearch
+     * 命中黄色高亮 / 字体度量 / 拖拽预览渲染 等约定.</p>
+     */
+    private static final class InnerRenderer extends ColoredTreeCellRenderer {
+
+        @Override
+        public void customizeCellRenderer(@NotNull JTree tree,
+                                          Object value,
+                                          boolean selected,
+                                          boolean expanded,
+                                          boolean leaf,
+                                          int row,
+                                          boolean hasFocus) {
+            if (!(value instanceof DefaultMutableTreeNode node)) {
+                return;
+            }
+            Object user = node.getUserObject();
+            if (user instanceof SkillsTreeModel.ArtifactNode artifactNode) {
+                SkillJarArtifact artifact = artifactNode.artifact();
+                this.append(artifactNode.toString(), SimpleTextAttributes.REGULAR_ATTRIBUTES);
+                this.append("  ");
+                this.append(formatSource(artifact.getSourceType()), SimpleTextAttributes.GRAYED_ATTRIBUTES);
+                this.setIcon(AllIcons.Nodes.PpLib);
+            } else if (user instanceof SkillsTreeModel.SkillNode skillNode) {
+                this.append(skillNode.skill().getName());
+                this.setIcon(SkillsJarsHelperIcons.SKILLSJARS_HELPER_16);
+            }
+        }
     }
 }
