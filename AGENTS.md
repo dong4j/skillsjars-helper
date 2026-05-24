@@ -27,10 +27,15 @@
 ./gradlew verifyPlugin     # 跑 IntelliJ Platform 兼容性校验
 ./gradlew publishBeta      # 发布到 Marketplace beta 通道 (需环境变量)
 ./gradlew publishDefault   # 发布到 default 通道 (隐藏发布, 需环境变量)
+
+./deploy.sh -h             # 看部署脚本完整 usage
+./deploy.sh -d             # 仅 rsync landing/ 到自有服务器 (最常用)
+./deploy.sh                # publishDefault + 上传 zip + 部署 landing 三件套
 ```
 
 > `runIde` 已开启 `-XX:+AllowEnhancedClassRedefinition`，支持简单方法体级热替换。
 > 发布相关任务需要 `CERTIFICATE_CHAIN` / `PRIVATE_KEY` / `PRIVATE_KEY_PASSWORD` / `PUBLISH_TOKEN` 环境变量，本地通常不用关心。
+> `deploy.sh` 顶部 CONFIG 区有 `REMOTE_HOST` / `REMOTE_ROOT_DIR` / `SITE_URL` 三个必改项, 也可用 `SKILLSJARS_DEPLOY_*` 环境变量临时覆盖, 详见脚本头部注释或 `landing/README.md`.
 
 ---
 
@@ -43,9 +48,17 @@ skillsjars-helper/
 ├── includes/                            插件市场页内容 (HTML), 通过 pluginConfiguration 注入
 │   ├── pluginDescription.html
 │   └── pluginChanges.html
+├── deploy.sh                            一键部署脚本 (publish + 上传 zip + rsync landing)
 ├── docs/
 │   ├── design.md                        一/二期完整设计 (架构事实来源)
+│   ├── extension-points.md              第三方插件接入扩展点的官方说明 (公共 API + skillSourceScanner)
 │   └── phase3-publish.md                三期发布功能需求草案
+├── landing/                             对外 landing page (静态 HTML, 中英双语)
+│   ├── index.html                       英文落地页
+│   ├── zh/index.html                    中文落地页
+│   ├── assets/                          双语共享 (styles / main.js / 图标 / banner)
+│   ├── nginx.conf                       站点 nginx 配置 (deploy.sh -n 上传)
+│   └── README.md                        landing 自身的 README (本地预览 / 部署细节)
 ├── src/main/
 │   ├── java/dev/dong4j/idea/skillsjars/helper/
 │   │   ├── api/                         公共 API (对外稳定契约)
@@ -75,7 +88,7 @@ skillsjars-helper/
 | 改导出策略 / 冲突机 / Manifest 结构                        | `export/ExportPlanner.java`（决策）+ `export/ExportExecutor.java`（落盘）+ `export/Manifest*`                             | 6 状态（NEW / UP_TO_DATE / OUTDATED / LOCALLY_MODIFIED / FOREIGN / DUPLICATE_NAME）的决策**只在 ExportPlanner**，执行层不要再做判断 |
 | 加新的 Agent 目标目录（第 10 个 agent）                     | `api/model/SkillTargetDirectory`（枚举）+ `icons/SkillsJarsHelperIcons` + `resources/icons/agents/*.png` + 国际化键       | 必须同时提供 1x 和 @2x 图标；ResourceBundle 中英两份都要补                                                                        |
 | 改 ToolWindow 树 / 渲染 / 右键菜单                       | `toolwindow/SkillsToolWindowPanel.java` + `SkillsTreeModel` + `SkillsTreeCellRenderer` + `SkillExportInteraction` | 渲染层禁止直接读 JAR / 写盘 —— 一律走 `SkillRegistry` / `SkillExportService`                                                  |
-| 暴露给第三方插件的能力                                      | `api/` 包（Listener / Service 接口 / model）                                                                           | 这是**公共契约**，破坏性改动需要在 `pluginChanges.html` 显式注明                                                                    |
+| 暴露给第三方插件的能力                                      | `api/` 包（Listener / Service 接口 / model）                                                                           | 这是**公共契约**，破坏性改动需要在 `pluginChanges.html` 显式注明；对外接入指南见 [`docs/extension-points.md`](docs/extension-points.md) 与 [`.claude/skills/integrate-skillsjars-helper`](.claude/skills/integrate-skillsjars-helper/SKILL.md) |
 | 新增 IntelliJ Platform service（projectService / applicationService） | 先读 [`.claude/skills/add-project-service`](.claude/skills/add-project-service/SKILL.md)                            | **官方决策路径**：有独立接口、对外暴露 → `plugin.xml` + `serviceInterface` + `serviceImplementation`；无接口、内部使用 → `@Service(Service.Level.PROJECT)` light service。详见 §8 第 7 条 |
 | 国际化文案                                            | `resources/messages/SkillsJarsHelperBundle*.properties` + `util/SkillsJarsHelperBundle.java`                      | 中英两份必须同时增删，键名同步                                                                                                  |
 | 通知 / Balloon                                     | `util/NotificationUtil.java` + `plugin.xml` 中 `notificationGroup="SkillsJars Helper Notifications"`               | 不要在业务层 `new Notification(...)`                                                                                   |
@@ -235,7 +248,10 @@ skillsjars-helper/
 
 - 项目设计事实来源：[`docs/design.md`](docs/design.md)
 - 三期需求草案：[`docs/phase3-publish.md`](docs/phase3-publish.md)
+- **第三方插件接入 SkillsJars Helper 的能力**：[`docs/extension-points.md`](docs/extension-points.md)（人类可读）+ [`.claude/skills/integrate-skillsjars-helper`](.claude/skills/integrate-skillsjars-helper/SKILL.md)（AI 友好）
 - 项目对外介绍：[`README.md`](README.md)
+- 对外 landing page：[`landing/README.md`](landing/README.md)（静态 HTML, 中英双语, `deploy.sh -d` 一键部署）
+- 部署脚本：[`deploy.sh`](deploy.sh)（顶部 CONFIG 区有必改项, 用法 `./deploy.sh -h`）
 - 插件市场页源文：[`includes/pluginDescription.html`](includes/pluginDescription.html)
 - 变更日志源文：[`includes/pluginChanges.html`](includes/pluginChanges.html)
 - 上游生态：[SkillsJars](https://www.skillsjars.com/)
