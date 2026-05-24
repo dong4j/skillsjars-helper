@@ -13,7 +13,7 @@ import java.util.Objects;
  *
  * <p>设计选择:</p>
  * <ul>
- *   <li>{@code agentId} 是稳定 ID (claude / codex / junie / cursor / gemini / agents),
+ *   <li>{@code agentId} 是稳定 ID (claude / codex / junie / cursor / gemini / qoder / agents),
  *       UI 展示文案靠 i18n bundle, 不混在数据模型里.</li>
  *   <li>{@code path} 是 {@link Path} 而不是 {@link com.intellij.openapi.vfs.VirtualFile},
  *       因为目标目录可能尚未存在; VirtualFile 会在 ExportExecutor 执行后再 refresh
@@ -35,6 +35,8 @@ public final class SkillTargetDirectory {
     public static final String AGENT_AGENTS = "agents";
     public static final String AGENT_CURSOR = "cursor";
     public static final String AGENT_GEMINI = "gemini";
+    /** Qoder (阿里) — Skill 目录约定 .qoder/skills/{name}/SKILL.md, 同时支持用户级 ~/.qoder/skills. */
+    public static final String AGENT_QODER = "qoder";
     /** 用户自定义目录的固定 agentId. */
     public static final String AGENT_CUSTOM = "custom";
 

@@ -42,13 +42,13 @@ public class SkillsJarsHelperIcons {
     // ========== Agent 安装状态徽标图标 (16x16) ==========
     //
     // 各 Agent 的官方品牌图标, 用于 ToolWindow 树叶子的右侧徽标, 表明该 skill 已安装到对应
-    // Agent. 5 个品牌图标 (Claude / Codex / Junie / Cursor / Gemini) 来自 @lobehub/icons
-    // 静态 SVG (MIT, github.com/lobehub/lobe-icons), 仅做尺寸/无关属性的最小裁剪, path 数据
-    // 与渐变保持原样; 详细版权声明见项目根 NOTICE 文件.
+    // Agent. 6 个品牌图标 (Claude / Codex / Junie / Cursor / Gemini / Qoder) 来自
+    // @lobehub/icons 静态 SVG (MIT, github.com/lobehub/lobe-icons), 仅做尺寸/无关属性的
+    // 最小裁剪, path 数据与渐变保持原样; 详细版权声明见项目根 NOTICE 文件.
     //
-    // 主题策略: claude / junie / gemini 用 -color 彩色版, 品牌识别度优先, light/dark 都能看清;
-    // codex / cursor 用 mono 版 (fill="currentColor"), 自动跟随 IDEA 主题反相; 通用 agents
-    // 没有官方资产, 使用项目自绘的几何兜底图标 (六边形 + 节点).
+    // 主题策略: claude / junie / gemini / qoder 用 -color 彩色版, 品牌识别度优先, light/dark
+    // 都能看清; codex / cursor 用 mono 版 (fill="currentColor"), 自动跟随 IDEA 主题反相;
+    // 通用 agents 没有官方资产, 使用项目自绘的几何兜底图标 (六边形 + 节点).
 
     /** Claude (Anthropic). 来源: @lobehub/icons claude-color.svg. */
     public static final Icon AGENT_CLAUDE = load("/icons/agents/claude.svg");
@@ -60,6 +60,8 @@ public class SkillsJarsHelperIcons {
     public static final Icon AGENT_CURSOR = load("/icons/agents/cursor.svg");
     /** Gemini (Google). 来源: @lobehub/icons gemini-color.svg. */
     public static final Icon AGENT_GEMINI = load("/icons/agents/gemini.svg");
+    /** Qoder (阿里). 来源: @lobehub/icons qoder-color.svg. */
+    public static final Icon AGENT_QODER = load("/icons/agents/qoder.svg");
     /** Agents (通用). 项目自绘几何兜底图标, 无官方品牌. */
     public static final Icon AGENT_AGENTS = load("/icons/agents/agents.svg");
 
@@ -80,6 +82,7 @@ public class SkillsJarsHelperIcons {
             case SkillTargetDirectory.AGENT_JUNIE -> AGENT_JUNIE;
             case SkillTargetDirectory.AGENT_CURSOR -> AGENT_CURSOR;
             case SkillTargetDirectory.AGENT_GEMINI -> AGENT_GEMINI;
+            case SkillTargetDirectory.AGENT_QODER -> AGENT_QODER;
             case SkillTargetDirectory.AGENT_AGENTS -> AGENT_AGENTS;
             case SkillTargetDirectory.AGENT_CUSTOM -> AllIcons.Nodes.Folder;
             default -> null;

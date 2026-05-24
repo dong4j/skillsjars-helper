@@ -6,7 +6,7 @@ project, in accordance with their respective licenses.
 
 ================================================================================
 @lobehub/icons (https://github.com/lobehub/lobe-icons)
-Files: src/main/resources/icons/agents/{claude,codex,junie,cursor,gemini}.svg
+Files: src/main/resources/icons/agents/{claude,codex,junie,cursor,gemini,qoder}.svg
 License: MIT
 --------------------------------------------------------------------------------
 MIT License
