@@ -1,5 +1,6 @@
 package dev.dong4j.idea.skillsjars.helper.action;
 
+import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
@@ -85,6 +86,19 @@ public class SkillsJarsHelperAction extends AnAction {
 
         // 只有在有项目和文件时才启用
         e.getPresentation().setEnabled(project != null && psiFile != null);
+    }
+
+    /**
+     * 声明 {@link #update(AnActionEvent)} 运行在 BGT.
+     *
+     * <p>当前 {@code update} 只读 {@link AnActionEvent} 自带的 project 与 PSI 数据, 不触碰 Swing,
+     * 在 BGT 上执行可以避免阻塞 EDT, 也满足 IDEA 2022.3+ 对显式声明 {@code ActionUpdateThread} 的硬性要求.</p>
+     *
+     * @return 后台线程
+     */
+    @Override
+    public @NotNull ActionUpdateThread getActionUpdateThread() {
+        return ActionUpdateThread.BGT;
     }
 }
 

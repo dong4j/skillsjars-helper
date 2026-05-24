@@ -15,8 +15,20 @@
     <depends>com.intellij.modules.platform</depends>
     <depends>com.intellij.modules.java</depends>
 
+    <!-- Maven 集成可选依赖: 仅在 IDE 启用了 Maven 插件时才装载 skillsjars-maven.xml,
+         其中包含 MavenPluginDependencyScanner 的注册. 缺失 Maven 插件时不影响其他扫描器. -->
+    <depends optional="true" config-file="skillsjars-maven.xml">org.jetbrains.idea.maven</depends>
+
     <!-- 国际化资源文件 -->
     <resource-bundle>messages.SkillsJarsHelperBundle</resource-bundle>
+
+    <!-- 插件自身定义的扩展点, 供本插件内部以及第三方插件扩展. -->
+    <extensionPoints>
+        <extensionPoint
+            name="skillSourceScanner"
+            interface="dev.dong4j.idea.skillsjars.helper.scanner.SkillSourceScanner"
+            dynamic="true"/>
+    </extensionPoints>
 
     <!-- 插件定义的扩展点。
          更多信息：https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
@@ -26,6 +38,24 @@
         <notificationGroup id="SkillsJars Helper Notifications"
                            displayType="BALLOON"
                            isLogByDefault="true"/>
+
+        <!-- 项目级 SkillRegistry 服务. 注册 serviceInterface 让外部插件以 API 类查找. -->
+        <projectService
+            serviceInterface="dev.dong4j.idea.skillsjars.helper.api.SkillRegistry"
+            serviceImplementation="dev.dong4j.idea.skillsjars.helper.service.SkillRegistryService"/>
+
+        <!-- Agent Skills Tool Window. anchor=right 与依赖类工具更接近. -->
+        <toolWindow
+            id="Agent Skills"
+            anchor="right"
+            icon="icons.SkillsJarsHelperIcons.SKILLSJARS_HELPER_16"
+            factoryClass="dev.dong4j.idea.skillsjars.helper.toolwindow.SkillsToolWindowFactory"/>
+    </extensions>
+
+    <!-- 注册到本插件自身扩展点的扫描器. Maven plugin <dependencies> 扫描器在 skillsjars-maven.xml. -->
+    <extensions defaultExtensionNs="dev.dong4j.idea.skillsjars.helper">
+        <skillSourceScanner
+            implementation="dev.dong4j.idea.skillsjars.helper.scanner.MavenLibraryScanner"/>
     </extensions>
 
     <!-- 插件定义的动作 -->
@@ -37,4 +67,3 @@
         </action>
     </actions>
 </idea-plugin>
-
