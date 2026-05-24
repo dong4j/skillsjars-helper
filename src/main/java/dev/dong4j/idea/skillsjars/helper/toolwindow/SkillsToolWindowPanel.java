@@ -56,7 +56,6 @@ import dev.dong4j.idea.skillsjars.helper.service.InstallationRegistryService;
 import dev.dong4j.idea.skillsjars.helper.util.SkillsJarsHelperBundle;
 
 import java.util.ArrayList;
-import java.util.LinkedHashSet;
 import java.util.Set;
 
 import icons.SkillsJarsHelperIcons;
@@ -286,7 +285,12 @@ public final class SkillsToolWindowPanel extends JPanel implements Disposable {
     }
 
     /**
-     * 当前 skill 已安装到了哪些 agent (按 agentId 字符串集合返回, 保持稳定排序).
+     * 当前 skill 已安装到了哪些 agent (按 agentId 字典序返回).
+     *
+     * <p>使用 {@link java.util.TreeSet} 而非 {@link java.util.LinkedHashSet}: 底层
+     * {@code findInstalledLocations} 不保证迭代顺序, 字典序与
+     * {@link SkillTargetDirectory#PRESET_AGENT_IDS} 排序约定保持一致,
+     * 让"已安装徽标"和"Extract to"下拉菜单看到的顺序统一.</p>
      */
     @NotNull
     private java.util.Set<String> installedAgents(@NotNull SkillsTreeModel.SkillNode node) {
@@ -294,7 +298,7 @@ public final class SkillsToolWindowPanel extends JPanel implements Disposable {
             node.artifact().getCoordinate(),
             node.skill().getJarEntryRoot()
         );
-        Set<String> agents = new LinkedHashSet<>();
+        Set<String> agents = new java.util.TreeSet<>();
         for (var loc : locations) {
             agents.add(loc.getAgentId());
         }

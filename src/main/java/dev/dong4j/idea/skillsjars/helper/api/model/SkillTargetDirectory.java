@@ -14,8 +14,8 @@ import java.util.Objects;
  *
  * <p>设计选择:</p>
  * <ul>
- *   <li>{@code agentId} 是稳定 ID (claude / codex / junie / cursor / gemini / qoder / trae /
- *       codebuddy / agents), UI 展示文案靠 i18n bundle, 不混在数据模型里.</li>
+ *   <li>{@code agentId} 是稳定 ID (agents / claude / codebuddy / codex / cursor / gemini /
+ *       junie / qoder / trae), UI 展示文案靠 i18n bundle, 不混在数据模型里.</li>
  *   <li>{@code path} 是 {@link Path} 而不是 {@link com.intellij.openapi.vfs.VirtualFile},
  *       因为目标目录可能尚未存在; VirtualFile 会在 ExportExecutor 执行后再 refresh
  *       回 IDEA. </li>
@@ -51,20 +51,24 @@ public final class SkillTargetDirectory {
 
     /**
      * 预设 Agent 清单. 单一权威源, 上层 (TargetDirectoryDetector / 文档 / 测试) 都从这里取,
-     * 排序即为 UI 菜单中"Extract to ▸"的显示顺序.
+     * 排序即为 UI 菜单中 "Extract to ▸" 的显示顺序.
+     *
+     * <p>排序约定: 按 agentId 字典序排列, 与 ToolWindow 树叶子的"已安装徽标"
+     * (见 {@code SkillsToolWindowPanel#installedAgents}) 保持一致, 避免用户在两处
+     * 看到不同的顺序产生认知负担. 加新 Agent 时按字母顺序插入即可.</p>
      *
      * <p>不包含 {@link #AGENT_CUSTOM}, 因为自定义目录由用户当场指定路径, 不属于"预设".</p>
      */
     public static final List<String> PRESET_AGENT_IDS = List.of(
-        AGENT_CLAUDE,
-        AGENT_CODEX,
-        AGENT_JUNIE,
         AGENT_AGENTS,
+        AGENT_CLAUDE,
+        AGENT_CODEBUDDY,
+        AGENT_CODEX,
         AGENT_CURSOR,
         AGENT_GEMINI,
+        AGENT_JUNIE,
         AGENT_QODER,
-        AGENT_TRAE,
-        AGENT_CODEBUDDY
+        AGENT_TRAE
     );
 
     /**
