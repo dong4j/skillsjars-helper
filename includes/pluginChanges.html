@@ -1,4 +1,65 @@
 <div>
+    <h3>2026.1.2000</h3>
+    <ul>
+        <li><b>Skill export</b>: a public project-level <code>SkillExportService</code> mirrors
+            <code>SkillRegistry</code>; right-click any skill to export it (or its whole jar) to one of six preset
+            Agent skills directories (<code>.claude/skills</code>, <code>.codex/skills</code>,
+            <code>.junie/skills</code>, <code>.agents/skills</code>, <code>.cursor/skills</code>,
+            <code>.gemini/skills</code>) or a custom directory.
+        </li>
+        <li><b>Naming aligned with Agent Skills spec</b>: the exported folder is named after the
+            <code>SKILL.md</code> frontmatter <code>name</code>, not the flattened
+            <code>skillsjars__org__repo__</code> form &mdash; matching the convention adopted by
+            <code>useSkillsNameAsDirectory=true</code> in <code>skillsjars-maven-plugin</code> v0.0.7.
+        </li>
+        <li><b>Six-state install machine</b>: <code>NEW</code> / <code>UP_TO_DATE</code> /
+            <code>OUTDATED</code> / <code>LOCALLY_MODIFIED</code> / <code>FOREIGN</code> /
+            <code>DUPLICATE_NAME</code>. Frequent paths (NEW / OUTDATED) write silently with a notification;
+            sensitive ones (LOCALLY_MODIFIED / FOREIGN) prompt yes/no; same-name conflicts from a different artifact
+            offer a three-way choice (overwrite original / use suffixed name / cancel).
+        </li>
+        <li><b>Manifest <code>.skillsjars-helper.json</code></b>: written into every exported skill folder with
+            <code>artifact</code> + <code>skillRoot</code> + per-file <code>sha256</code>; used to detect upgrades
+            and local edits without a heavy index.
+        </li>
+        <li><b>Installation badges</b>: skill leaves now show a gray
+            <code>&middot; installed: claude, codex</code> badge; an <code>InstallationRegistryService</code>
+            scans the six preset directories on startup and after every export.
+        </li>
+        <li><b>Tests</b>: <code>ExportNamingTest</code>, <code>ManifestJsonTest</code>, <code>ExportPlannerTest</code>
+            covering all six install states; <code>SkillJarParserTest</code> extended to verify file enumeration.
+        </li>
+    </ul>
+
+    <ul>
+        <li><b>Skill 导出</b>: 新增项目级 <code>SkillExportService</code>, 与 <code>SkillRegistry</code> 对称暴露;
+            右键任意 skill 可导出到 6 个预设 Agent 目录 (<code>.claude/skills</code>, <code>.codex/skills</code>,
+            <code>.junie/skills</code>, <code>.agents/skills</code>, <code>.cursor/skills</code>,
+            <code>.gemini/skills</code>) 或自定义目录, 整个 jar 也可一键批量导出.
+        </li>
+        <li><b>命名对齐 Agent Skills 规范</b>: 导出目录直接采用 <code>SKILL.md</code> frontmatter 的
+            <code>name</code>, 不再使用 <code>skillsjars__org__repo__</code> 扁平化前缀, 与
+            <code>skillsjars-maven-plugin</code> v0.0.7 的 <code>useSkillsNameAsDirectory=true</code> 保持一致.
+        </li>
+        <li><b>6 状态写入机</b>: <code>NEW</code> / <code>UP_TO_DATE</code> / <code>OUTDATED</code> /
+            <code>LOCALLY_MODIFIED</code> / <code>FOREIGN</code> / <code>DUPLICATE_NAME</code>. 常用路径
+            (NEW / OUTDATED) 直接写入 + Notification; 敏感场景 (LOCALLY_MODIFIED / FOREIGN) yes/no 二次确认;
+            来自不同 artifact 的同名冲突 (DUPLICATE_NAME) 弹三选项: 覆盖原有 / 改用后缀名 / 取消.
+        </li>
+        <li><b>Manifest <code>.skillsjars-helper.json</code></b>: 写入每个导出目录, 包含 <code>artifact</code> +
+            <code>skillRoot</code> + 每文件 <code>sha256</code>, 用于判断升级与本地修改, 无需重型索引.
+        </li>
+        <li><b>安装徽标</b>: skill 叶子节点行尾显示灰色
+            <code>&middot; installed: claude, codex</code>; <code>InstallationRegistryService</code>
+            在启动时与每次导出后重扫 6 个预设目录的 manifest.
+        </li>
+        <li><b>测试</b>: 新增 <code>ExportNamingTest</code> / <code>ManifestJsonTest</code> /
+            <code>ExportPlannerTest</code>, 完整覆盖 6 种安装状态; <code>SkillJarParserTest</code> 增补
+            文件枚举用例.
+        </li>
+    </ul>
+</div>
+<div>
     <h3>2026.1.1000</h3>
     <ul>
         <li><b>Discovery pipeline</b>: scans Maven regular dependencies and Maven plugin <code>&lt;dependencies&gt;</code>,

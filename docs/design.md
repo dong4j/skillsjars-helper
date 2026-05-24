@@ -375,17 +375,49 @@ Marketplace 动作：
 
 ## 导出策略
 
-导出目录命名需要兼顾可读性和冲突规避。
+### 命名规则
 
-建议提供三种策略：
+目录命名直接采用 `SKILL.md` frontmatter 的 `name` 字段，与 Agent Skills 规范保持一致：
 
-| 策略         | 示例                                     | 说明                      |
-|------------|----------------------------------------|-------------------------|
-| official   | `skillsjars__dev__dong4j__code-review` | 尽量兼容 SkillsJars 官方扁平化命名 |
-| readable   | `code-review`                          | 可读性最好，但容易冲突             |
-| namespaced | `dev.dong4j__zeka-skills__code-review` | 默认推荐，适合 IDE 管理          |
+| 场景            | 目录名示例                            | 说明                                                        |
+|---------------|---------------------------------------|-----------------------------------------------------------|
+| 默认            | `code-review/`                       | 直接采用 frontmatter 的 `name`                              |
+| 缺失 `name`     | `code-review/`                       | 退化到 jar 内 skill 根目录最后一段 (parser 已 fallback)  |
+| DUPLICATE_NAME | `code-review__zeka-skills/`         | 同名冲突时 fallback 为 `<name>__<artifactId>`              |
 
-第一版默认使用 `namespaced`，并在设置中保留调整空间。
+**为什么不沿用官方 `skillsjars__org__repo__skill` 扁平化前缀**：
+
+- Anthropic 的 Agent Skills 规范以及主流 code assistant (Claude Code / Cursor / Codex 等)
+  期望目录名 == frontmatter `name`，参考 [skillsjars-maven-plugin#4](https://github.com/skillsjars/skillsjars-maven-plugin/issues/4)。
+- v0.0.7 的 `useSkillsNameAsDirectory=true` 已经是官方背书。
+- 维护者自己也指出该选项有同名冲突副作用，但 Maven CLI 没有 IDE 上下文无法很好地解决。
+  本插件天然有完整 IDE 上下文，可以专门处理同名冲突 (见下文 `DUPLICATE_NAME`)。
+
+### 写入交互 (6 状态机)
+
+导出前由 `ExportPlanner` 计算 `InstallationStatus`，UI 按状态决定弹什么：
+
+| 状态                  | 触发条件                                                                  | 行为                                                                      |
+|---------------------|-----------------------------------------------------------------------|-------------------------------------------------------------------------|
+| `NEW`               | 目标目录不存在                                                              | 直接写 + Notification "已安装"                                               |
+| `UP_TO_DATE`        | 已存在 + manifest 来源一致 + jar sha 一致 + 所有文件 sha 一致                  | 不写 + Notification "已是最新"                                              |
+| `OUTDATED`          | 已存在 + manifest 来源一致 + jar sha 升级了                                | 直接覆盖 + Notification "已升级"                                            |
+| `LOCALLY_MODIFIED`  | 已存在 + manifest 来源一致 + 本地文件 sha 与 manifest 不符                    | yes/no 弹窗 "本地修改将丢失，是否覆盖？"                                          |
+| `FOREIGN`           | 已存在 + 没有 manifest                                                  | yes/no 弹窗 "目录不是由本插件管理，是否覆盖？"                                       |
+| `DUPLICATE_NAME`    | 已存在 + manifest 来源是 **另一个 jar / 另一个 entry root** (同名不同源)         | 三选项弹窗：① 覆盖原 skill ② 改用 `<name>__<artifactId>` 后缀名 ③ 取消             |
+
+`UP_TO_DATE` 与 `OUTDATED` 默认不弹窗以保证常用路径的流畅；其余三种都需要二次确认以避免误覆盖用户内容。
+
+### 写入算法
+
+1. 准备 Agent 父目录 (如 `.claude/skills`) 不存在则递归创建。
+2. 在父目录下创建临时目录 `<target>.tmp-<random>`，把 jar 内的 skill 内容复制进去并同时计算每文件 sha256。
+3. 写 `.skillsjars-helper.json` 到临时目录。
+4. 如果目标目录已存在，递归删除。
+5. 用 atomic move 把临时目录改名为最终目录；不支持 atomic 的文件系统 (跨设备 / 部分 Windows) 退化为普通 move。
+6. 通过 `LocalFileSystem.refreshAndFindFileByNioFile` 把变更同步到 IDEA VFS，让项目视图立即看到。
+
+任何步骤异常都会清理临时目录，不会留下半成品。
 
 ## SkillsJars.com 搜索与安装
 
@@ -515,31 +547,47 @@ Maven 场景需要让用户选择“加入普通依赖”还是“加入 SkillsJ
 
 ```json
 {
+  "schemaVersion": 1,
   "managedBy": "skillsjars-helper",
   "artifact": "dev.dong4j:zeka-skills:1.0.0",
-  "sourceType": "MAVEN_PLUGIN_DEPENDENCY",
+  "sourceType": "MAVEN_DEPENDENCY",
   "skill": "code-review",
   "sourceJarSha256": "...",
   "skillRoot": "META-INF/skills/dev/dong4j/code-review/",
   "installedAt": "2026-05-23T10:00:00+08:00",
   "targetAgent": "claude",
-  "targetPath": ".claude/skills/dev.dong4j__zeka-skills__code-review",
+  "targetPath": "/abs/path/.claude/skills/code-review",
   "files": [
     {
       "path": "SKILL.md",
-      "sha256": "..."
+      "sha256": "...",
+      "size": 1234
     }
   ]
 }
 ```
 
-Manifest 用于判断：
+字段含义：
 
-- 是否由本插件导出。
-- 来源 Jar 是否更新。
-- 目标目录是否被手工修改。
-- 是否可以安全覆盖。
-- 是否可以执行 Clean Installed Skills。
+| 字段                | 用途                                                                                                |
+|------------------|--------------------------------------------------------------------------------------------------|
+| `schemaVersion`  | manifest 自身版本号，向后不兼容时递增                                                                              |
+| `managedBy`      | 固定为 `skillsjars-helper`，用于判断是否本插件管理 (区分 `FOREIGN`)                                          |
+| `artifact`       | 来源坐标，与 `skillRoot` 联合识别 skill 来源 (用于判断 `DUPLICATE_NAME`)                                      |
+| `sourceType`     | 来源类型枚举，仅记录便于审计                                                                                      |
+| `skill`          | frontmatter `name` 的快照                                                                              |
+| `sourceJarSha256`| **当前 skill 的内容指纹** (不是整个 jar 的 sha)，由 skill 根目录下所有文件的 (path + sha) 聚合再 sha 计算得到 |
+| `skillRoot`      | jar 内 skill 根路径                                                                                     |
+| `installedAt`    | ISO-8601 + 时区，仅供人读                                                                                   |
+| `targetAgent`    | Agent ID (`claude` / `codex` / `junie` / `agents` / `cursor` / `gemini` / `custom`)            |
+| `targetPath`     | 落盘绝对路径                                                                                              |
+| `files`          | 每个文件的 (relative-path, sha256, size)，用于 `LOCALLY_MODIFIED` 判定                                    |
+
+为什么 `sourceJarSha256` 不用整个 jar 的 sha：同 jar 内其他 skill 的变化不应触发本 skill 的 `OUTDATED`，
+也不能仅用 `SKILL.md` 的 sha 因为同 skill 内的 `examples/` `scripts/` 等辅助文件变化也应触发升级。
+
+JSON 序列化使用本插件自带的 mini parser，避免引入 Gson 等第三方依赖；解析失败时把目录视为 `FOREIGN`
+(损坏的 manifest ≈ 没有可信 manifest)。
 
 ## 风险检查
 
