@@ -678,7 +678,7 @@ public final class SkillsToolWindowPanel extends JPanel implements Disposable {
     /**
      * 右键 "Extract to ▸" 子菜单, 仅在选中 skill 时显示.
      *
-     * <p>子项: 6 个预设 Agent + Custom Directory; 选中后调用
+     * <p>子项: 所有预设 Agent + Custom Directory; 选中后调用
      * {@link SkillExportInteraction#exportSingle} 走完整 6 状态流程.</p>
      */
     private final class ExtractSkillToGroup extends DefaultActionGroup {
@@ -740,7 +740,7 @@ public final class SkillsToolWindowPanel extends JPanel implements Disposable {
     }
 
     /**
-     * 构造 Extract to 子菜单的子项: 6 个预设 + Custom Directory.
+     * 构造 Extract to 子菜单的子项: 所有预设 Agent + Custom Directory.
      *
      * @param batch true 表示批量导出整个 artifact, false 表示单个 skill
      */

@@ -82,6 +82,7 @@ Extract to...
 ├── .gemini/skills
 ├── .qoder/skills
 ├── .trae/skills
+├── .codebuddy/skills
 └── Custom Directory...
 ```
 
@@ -582,7 +583,7 @@ Maven 场景需要让用户选择“加入普通依赖”还是“加入 SkillsJ
 | `sourceJarSha256`| **当前 skill 的内容指纹** (不是整个 jar 的 sha)，由 skill 根目录下所有文件的 (path + sha) 聚合再 sha 计算得到 |
 | `skillRoot`      | jar 内 skill 根路径                                                                                     |
 | `installedAt`    | ISO-8601 + 时区，仅供人读                                                                                   |
-| `targetAgent`    | Agent ID (`claude` / `codex` / `junie` / `agents` / `cursor` / `gemini` / `qoder` / `trae` / `custom`) |
+| `targetAgent`    | Agent ID (`claude` / `codex` / `junie` / `agents` / `cursor` / `gemini` / `qoder` / `trae` / `codebuddy` / `custom`) |
 | `targetPath`     | 落盘绝对路径                                                                                              |
 | `files`          | 每个文件的 (relative-path, sha256, size)，用于 `LOCALLY_MODIFIED` 判定                                    |
 

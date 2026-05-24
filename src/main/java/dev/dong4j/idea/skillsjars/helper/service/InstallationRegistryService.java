@@ -33,8 +33,9 @@ import dev.dong4j.idea.skillsjars.helper.export.TargetDirectoryDetector;
 /**
  * 安装状态索引服务.
  *
- * <p>定期 (按需) 扫描 6 个预设 Agent 目录, 把每个目录里包含 {@code .skillsjars-helper.json}
- * 的子目录解析成 manifest, 形成 (artifact + skillRoot) → {目标 agent 列表} 的索引.</p>
+ * <p>定期 (按需) 扫描所有预设 Agent 目录 (清单见 {@link SkillTargetDirectory#PRESET_AGENT_IDS}),
+ * 把每个目录里包含 {@code .skillsjars-helper.json} 的子目录解析成 manifest, 形成
+ * (artifact + skillRoot) → {目标 agent 列表} 的索引.</p>
  *
  * <p>UI 用此服务回答两个问题:</p>
  * <ul>
@@ -44,7 +45,7 @@ import dev.dong4j.idea.skillsjars.helper.export.TargetDirectoryDetector;
  *
  * <p>线程模型:</p>
  * <ul>
- *   <li>{@link #refresh()} 同步执行, IO 量极小 (只读 6 个目录的 manifest), 不需要后台
+ *   <li>{@link #refresh()} 同步执行, IO 量极小 (只读预设目录下的 manifest), 不需要后台
  *       进度条; UI 在右键展开 / 导出后调用即可.</li>
  *   <li>快照通过 {@link AtomicReference} 持有, 读取无锁.</li>
  *   <li>监听器派发在 EDT 上.</li>
@@ -86,7 +87,7 @@ public final class InstallationRegistryService implements Disposable {
     }
 
     /**
-     * 重新扫描 6 个预设目录, 替换内存快照, 然后通知监听器.
+     * 重新扫描所有预设目录, 替换内存快照, 然后通知监听器.
      */
     public void refresh() {
         Map<String, List<InstalledLocation>> next = new HashMap<>();

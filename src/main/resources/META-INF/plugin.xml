@@ -49,7 +49,7 @@
             serviceInterface="dev.dong4j.idea.skillsjars.helper.api.SkillExportService"
             serviceImplementation="dev.dong4j.idea.skillsjars.helper.service.SkillExportServiceImpl"/>
 
-        <!-- 项目级 InstallationRegistry 服务: 维护 8 个预设 Agent 目录的安装状态索引. -->
+        <!-- 项目级 InstallationRegistry 服务: 维护所有预设 Agent 目录的安装状态索引. -->
         <projectService
             serviceImplementation="dev.dong4j.idea.skillsjars.helper.service.InstallationRegistryService"/>
 

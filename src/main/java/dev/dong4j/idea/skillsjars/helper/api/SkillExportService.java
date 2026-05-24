@@ -22,7 +22,7 @@ import dev.dong4j.idea.skillsjars.helper.api.model.SkillTargetDirectory;
  *
  * <p>典型调用顺序:</p>
  * <ol>
- *   <li>{@link #detectTargets(Project)} 拿到 6 个预设 Agent 目录候选.</li>
+ *   <li>{@link #detectTargets(Project)} 拿到预设 Agent 目录候选.</li>
  *   <li>{@link #planExport(SkillJarArtifact, SkillDescriptor, SkillTargetDirectory)}
  *       计算出冲突状态、文件清单与落盘子目录名.</li>
  *   <li>UI 根据 {@link ExportPlan#getStatus()} 决定是否需要用户确认.</li>
@@ -50,9 +50,8 @@ public interface SkillExportService {
     /**
      * 探测当前项目的可用 Agent 目录.
      *
-     * <p>返回 6 个预设 Agent 目录候选 (Claude / Codex / Junie / Agents / Cursor /
-     * Gemini), 路径默认相对项目根; 不论目录是否真实存在都会返回, 由 UI 自行判断展示
-     * 与否.</p>
+     * <p>返回 {@link SkillTargetDirectory#PRESET_AGENT_IDS} 中所有预设 Agent 的目录候选,
+     * 路径默认相对项目根; 不论目录是否真实存在都会返回, 由 UI 自行判断展示与否.</p>
      *
      * @param project 当前项目
      * @return 不可变候选列表; 项目无 basePath 时返回空列表

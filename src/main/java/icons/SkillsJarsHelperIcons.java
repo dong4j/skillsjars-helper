@@ -42,13 +42,15 @@ public class SkillsJarsHelperIcons {
     // ========== Agent 安装状态徽标图标 (16x16) ==========
     //
     // 各 Agent 的官方品牌图标, 用于 ToolWindow 树叶子的右侧徽标, 表明该 skill 已安装到对应
-    // Agent. 7 个品牌图标 (Claude / Codex / Junie / Cursor / Gemini / Qoder / Trae) 来自
-    // @lobehub/icons 静态 SVG (MIT, github.com/lobehub/lobe-icons), 仅做尺寸/无关属性的
-    // 最小裁剪, path 数据与渐变保持原样; 详细版权声明见项目根 NOTICE 文件.
+    // Agent. 全部品牌图标 (Claude / Codex / Junie / Cursor / Gemini / Qoder / Trae /
+    // CodeBuddy ...) 来自 @lobehub/icons 静态 SVG (MIT, github.com/lobehub/lobe-icons),
+    // 仅做尺寸/无关属性的最小裁剪, path 数据与渐变保持原样; 详细版权声明与文件清单见项目根
+    // NOTICE 文件.
     //
-    // 主题策略: claude / junie / gemini / qoder / trae 用 -color 彩色版, 品牌识别度优先,
-    // light/dark 都能看清; codex / cursor 用 mono 版 (fill="currentColor"), 自动跟随 IDEA
-    // 主题反相; 通用 agents 没有官方资产, 使用项目自绘的几何兜底图标 (六边形 + 节点).
+    // 主题策略: 彩色品牌色 (-color) 优先用于识别度强的 Logo (claude / junie / gemini /
+    // qoder / trae / codebuddy ...), light/dark 都能看清; 单色 mono 版 (fill="currentColor")
+    // 用于本身就是单色 logo 的品牌 (codex / cursor ...), 自动跟随 IDEA 主题反相; 通用
+    // agents 没有官方资产, 使用项目自绘的几何兜底图标 (六边形 + 节点).
 
     /** Claude (Anthropic). 来源: @lobehub/icons claude-color.svg. */
     public static final Icon AGENT_CLAUDE = load("/icons/agents/claude.svg");
@@ -64,6 +66,8 @@ public class SkillsJarsHelperIcons {
     public static final Icon AGENT_QODER = load("/icons/agents/qoder.svg");
     /** Trae (字节). 来源: @lobehub/icons trae-color.svg. */
     public static final Icon AGENT_TRAE = load("/icons/agents/trae.svg");
+    /** CodeBuddy (腾讯). 来源: @lobehub/icons codebuddy-color.svg. */
+    public static final Icon AGENT_CODEBUDDY = load("/icons/agents/codebuddy.svg");
     /** Agents (通用). 项目自绘几何兜底图标, 无官方品牌. */
     public static final Icon AGENT_AGENTS = load("/icons/agents/agents.svg");
 
@@ -86,6 +90,7 @@ public class SkillsJarsHelperIcons {
             case SkillTargetDirectory.AGENT_GEMINI -> AGENT_GEMINI;
             case SkillTargetDirectory.AGENT_QODER -> AGENT_QODER;
             case SkillTargetDirectory.AGENT_TRAE -> AGENT_TRAE;
+            case SkillTargetDirectory.AGENT_CODEBUDDY -> AGENT_CODEBUDDY;
             case SkillTargetDirectory.AGENT_AGENTS -> AGENT_AGENTS;
             case SkillTargetDirectory.AGENT_CUSTOM -> AllIcons.Nodes.Folder;
             default -> null;
