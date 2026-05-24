@@ -41,24 +41,26 @@ public class SkillsJarsHelperIcons {
 
     // ========== Agent 安装状态徽标图标 (16x16) ==========
     //
-    // 各 Agent 的简化品牌图标, 用于 ToolWindow 树叶子的右侧徽标, 表明该 skill 已安装到对应
-    // Agent. 几何简化版仅保留品牌识别度, 不直接复制官方 logo, 规避版权风险.
+    // 各 Agent 的官方品牌图标, 用于 ToolWindow 树叶子的右侧徽标, 表明该 skill 已安装到对应
+    // Agent. 5 个品牌图标 (Claude / Codex / Junie / Cursor / Gemini) 来自 @lobehub/icons
+    // 静态 SVG (MIT, github.com/lobehub/lobe-icons), 仅做尺寸/无关属性的最小裁剪, path 数据
+    // 与渐变保持原样; 详细版权声明见项目根 NOTICE 文件.
     //
-    // 颜色策略: Claude (terra cotta) / Junie (lawn green) / Gemini (蓝紫渐变) 用品牌色,
-    // light/dark 主题下都能识别; Codex (黑) / Cursor (黑) / Agents (单色) 使用 currentColor,
-    // 由 IDEA 自动跟随主题反相.
+    // 主题策略: claude / junie / gemini 用 -color 彩色版, 品牌识别度优先, light/dark 都能看清;
+    // codex / cursor 用 mono 版 (fill="currentColor"), 自动跟随 IDEA 主题反相; 通用 agents
+    // 没有官方资产, 使用项目自绘的几何兜底图标 (六边形 + 节点).
 
-    /** Claude (Anthropic) 简化星型图标. */
+    /** Claude (Anthropic). 来源: @lobehub/icons claude-color.svg. */
     public static final Icon AGENT_CLAUDE = load("/icons/agents/claude.svg");
-    /** Codex (OpenAI) 简化六瓣花图标. */
+    /** Codex (OpenAI). 来源: @lobehub/icons codex.svg (mono, currentColor). */
     public static final Icon AGENT_CODEX = load("/icons/agents/codex.svg");
-    /** Junie (JetBrains) 绿色方块字母图标. */
+    /** Junie (JetBrains). 来源: @lobehub/icons junie-color.svg. */
     public static final Icon AGENT_JUNIE = load("/icons/agents/junie.svg");
-    /** Cursor 经典光标三角图标. */
+    /** Cursor. 来源: @lobehub/icons cursor.svg (mono, currentColor). */
     public static final Icon AGENT_CURSOR = load("/icons/agents/cursor.svg");
-    /** Gemini (Google) 蓝紫渐变四角星图标. */
+    /** Gemini (Google). 来源: @lobehub/icons gemini-color.svg. */
     public static final Icon AGENT_GEMINI = load("/icons/agents/gemini.svg");
-    /** Agents (通用) 六边形 + 节点图标. */
+    /** Agents (通用). 项目自绘几何兜底图标, 无官方品牌. */
     public static final Icon AGENT_AGENTS = load("/icons/agents/agents.svg");
 
     /**
