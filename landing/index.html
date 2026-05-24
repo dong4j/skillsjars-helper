@@ -1,0 +1,779 @@
+<!doctype html>
+<!--
+  SkillsJars Helper — Landing Page
+  ---------------------------------------------------------------------------
+  生成依据: .claude/skills/landing-page-guide-v2/SKILL.md (DESIGNNAS 11 elements
+  + 设计卓越原则). 工程形态选择: 静态 HTML / vanilla CSS / 0 构建依赖,
+  方便用 nginx 直接静态托管, 同时不给纯 JetBrains 插件仓库引入 Node 工具链.
+
+  Aesthetic direction: Editorial-Tech (Dark Editorial + Retro-Futuristic 杂交).
+    - 受众是 JetBrains 开发者, 深色基底 (近黑暖偏) 贴近 IDE 主题
+    - 字体 Inter (display + body 同家族多重) + JetBrains Mono (code).
+      初版按 skill 推荐选了 Unbounded + Manrope, 但用户反馈 "字体看着别扭, 改大众点",
+      用户偏好优先, 改回 Inter; 中文 fallback 走 PingFang SC / Microsoft YaHei.
+    - 主色 #FF7A1A 暖橙呼应 IntelliJ 调性, 拒绝 "purple gradient on white" 的 AI 套路
+    - 9 个 Agent 用 3x3 bento grid 体现 "skill 枢纽" 感, 不用乏味 3 列重复
+    - 提供英文 / 中文双语版本, 顶部有 EN / 中文 切换 toggle
+
+  11 essential elements (DESIGNNAS) 落地清单:
+    1. URL with keywords          -> 占位域名含 'skillsjars-helper' (用户自行替换)
+    2. Company logo (header)      -> sticky header + 真实插件 SVG 图标 + 'SkillsJars Helper'
+    3. SEO title & subtitle       -> H1 (clamp 至 5.4rem) + 副标
+    4. Primary CTA (hero)         -> Install on Marketplace + Star on GitHub
+    5. Social proof (hero)        -> 3 个核心 stat + 9 agent icon row
+    6. Images / videos            -> hero 右侧 IDE Tool Window mock-up (HTML/CSS 实做)
+    7. Core benefits / features   -> bento 6 cards (asymmetric, hover cursor-follow);
+                                     05 卡底部带 "Read the integration guide" 跳转
+                                     第三方插件集成指南 (README#扩展 章节)
+    8. Customer testimonials      -> 替换为 "Who it's for" 4 类受众真实场景
+                                     (避免编造假人名假头像, 符合 user rules)
+    9. FAQ section                -> 8 个真实问题, <details> 原生 accordion
+    10. Final CTA                 -> 暖橙渐变全宽卡片, 双 CTA + 元数据
+    11. Footer                    -> 4 列 (含 Plugin integration guide) + 底部版权 / 协议
+-->
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#0A0A0B">
+
+    <!-- Element 1 (SEO): keyword-rich title + meta -->
+    <title>SkillsJars Helper — Manage Agent Skills inside JetBrains IDE | dong4j</title>
+    <meta
+      name="description"
+      content="A JetBrains IDE plugin that turns Maven-distributed Agent Skills (SkillsJars) into first-class citizens. Discover, preview SKILL.md without unzipping JARs, and one-click export to Claude, Codex, Junie, Cursor, Gemini, Qoder, Trae, CodeBuddy or any custom directory."
+    >
+    <meta
+      name="keywords"
+      content="SkillsJars, Agent Skills, JetBrains plugin, IntelliJ IDEA plugin, Claude skills, Codex skills, Cursor skills, Junie skills, SKILL.md, Maven Agent Skills"
+    >
+    <meta name="author" content="dong4j">
+
+    <!-- Open Graph / social -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="SkillsJars Helper — Agent Skills, JetBrains-native">
+    <meta
+      property="og:description"
+      content="Browse, preview and export Agent Skills (SKILL.md) without unzipping a single JAR. 9 agents supported, smart conflict detection, public extension API."
+    >
+    <meta property="og:image" content="./assets/banner.png">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="SkillsJars Helper — Agent Skills, JetBrains-native">
+    <meta name="twitter:description" content="Manage Agent Skills like Maven dependencies, right inside your JetBrains IDE.">
+    <meta name="twitter:image" content="./assets/banner.png">
+
+    <!-- 双语声明: / 英文为默认, /zh/ 是中文版 -->
+    <link rel="alternate" hreflang="en" href="./">
+    <link rel="alternate" hreflang="zh-Hans" href="./zh/">
+
+    <!-- Favicon: 直接复用插件官方 SVG 图标 (Marketplace 同款) -->
+    <link rel="icon" type="image/svg+xml" href="./assets/plugin-icon.svg">
+    <link rel="alternate icon" type="image/png" href="./assets/agents/agents@2x.png">
+    <link rel="apple-touch-icon" href="./assets/agents/agents@2x.png">
+
+    <!-- Fonts (display=swap 防 FOIT) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    >
+
+    <link rel="stylesheet" href="./assets/styles.css">
+  </head>
+
+  <body>
+    <!-- ================================================================
+         Element 2: Company logo + sticky header
+         ================================================================ -->
+    <header class="site-header" data-scrolled="false">
+      <div class="container nav">
+        <a href="#top" class="brand" aria-label="SkillsJars Helper home">
+          <span class="brand-mark" aria-hidden="true">
+            <img src="./assets/plugin-icon.svg" alt="">
+          </span>
+          <span class="brand-name">
+            <span>SkillsJars Helper</span>
+            <span class="brand-name-sub">v2026.1</span>
+          </span>
+        </a>
+
+        <nav aria-label="Primary">
+          <ul class="nav-links">
+            <li><a href="#features">Features</a></li>
+            <li><a href="#agents">Agents</a></li>
+            <li><a href="#usecases">Use cases</a></li>
+            <li><a href="#faq">FAQ</a></li>
+          </ul>
+        </nav>
+
+        <div class="nav-actions">
+          <div class="lang-switch" role="group" aria-label="Language">
+            <a href="./" aria-current="true">EN</a>
+            <a href="./zh/">中文</a>
+          </div>
+          <a
+            class="nav-cta"
+            href="https://plugins.jetbrains.com/plugin/31935-skillsjars-helper"
+            target="_blank"
+            rel="noopener"
+          >
+            Install
+            <span aria-hidden="true">→</span>
+          </a>
+        </div>
+      </div>
+    </header>
+
+    <main id="top">
+      <!-- ================================================================
+           Hero: Elements 3 / 4 / 5 / 6 (title, subtitle, primary CTA,
+           social proof, hero media)
+           ================================================================ -->
+      <section class="hero" id="hero">
+        <div class="container hero-grid">
+          <div>
+            <div class="hero-eyebrow">
+              <span class="badge">
+                <span class="badge-dot" aria-hidden="true"></span>
+                IntelliJ Platform 2024.2 → 2026.1 · Java 21
+              </span>
+            </div>
+
+            <h1 class="hero-title">
+              Manage Agent Skills like Maven dependencies.
+              <em>Without unzipping a single JAR.</em>
+            </h1>
+
+            <p class="hero-sub">
+              SkillsJars Helper turns Maven-distributed
+              <code class="mono">SKILL.md</code> bundles into JetBrains IDE
+              first-class citizens. Discover, preview, and export to
+              <strong>9 agents'</strong> local directories — all without leaving your editor.
+            </p>
+
+            <div class="hero-cta">
+              <a
+                class="btn btn-primary btn-lg"
+                href="https://plugins.jetbrains.com/plugin/31935-skillsjars-helper"
+                target="_blank"
+                rel="noopener"
+              >
+                Install on Marketplace
+                <span aria-hidden="true">→</span>
+              </a>
+              <a
+                class="btn btn-ghost btn-lg"
+                href="https://github.com/dong4j/skillsjars-helper"
+                target="_blank"
+                rel="noopener"
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                  <path d="M12 .3a12 12 0 0 0-3.79 23.4c.6.1.82-.26.82-.58v-2c-3.34.72-4.04-1.61-4.04-1.61-.55-1.39-1.34-1.76-1.34-1.76-1.09-.74.08-.73.08-.73 1.21.09 1.85 1.24 1.85 1.24 1.07 1.83 2.81 1.3 3.5 1 .1-.78.42-1.3.76-1.6-2.66-.3-5.46-1.33-5.46-5.93 0-1.31.47-2.38 1.24-3.22-.13-.3-.54-1.52.12-3.18 0 0 1.01-.32 3.3 1.23a11.5 11.5 0 0 1 6 0c2.29-1.55 3.3-1.23 3.3-1.23.66 1.66.25 2.88.12 3.18.77.84 1.24 1.91 1.24 3.22 0 4.61-2.81 5.62-5.48 5.92.43.37.81 1.1.81 2.22v3.29c0 .32.21.69.83.58A12 12 0 0 0 12 .3z"/>
+                </svg>
+                Star on GitHub
+              </a>
+            </div>
+
+            <!-- Element 5: Social proof -->
+            <div class="hero-proof" aria-label="Key stats">
+              <div class="proof-stat">
+                <div class="proof-num"><em>9</em></div>
+                <div class="proof-label">Agents supported</div>
+              </div>
+              <div class="proof-stat">
+                <div class="proof-num"><em>0</em></div>
+                <div class="proof-label">JARs unzipped</div>
+              </div>
+              <div class="proof-stat">
+                <div class="proof-num">MIT</div>
+                <div class="proof-label">Open source</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Element 6: Hero media (HTML/CSS Tool Window mock-up) -->
+          <div aria-hidden="true">
+            <div class="ide-mock">
+              <div class="ide-mock-titlebar">
+                <span class="dot"></span>
+                <span class="dot"></span>
+                <span class="dot"></span>
+                <span class="tab">Agent Skills</span>
+              </div>
+              <div class="ide-mock-body">
+                <div class="ide-mock-rail">
+                  <span class="rail-item">Project</span>
+                  <span class="rail-item active">Skills</span>
+                  <span class="rail-item">Notes</span>
+                </div>
+                <div class="ide-mock-tree">
+                  <div class="tree-row tree-artifact">
+                    <span class="tree-icon">▾</span>
+                    <span>com.example:agent-skills:1.2.0</span>
+                  </div>
+                  <div class="tree-row tree-skill">
+                    <span class="tree-skill-icon">SK</span>
+                    <span>code-reviewer</span>
+                    <span class="tree-badges">
+                      <span class="tree-badge"><img src="./assets/agents/claude@2x.png" alt=""></span>
+                      <span class="tree-badge"><img src="./assets/agents/codex@2x.png" alt=""></span>
+                    </span>
+                  </div>
+                  <div class="tree-row tree-skill">
+                    <span class="tree-skill-icon">SK</span>
+                    <span>commit-helper</span>
+                    <span class="tree-badges">
+                      <span class="tree-badge"><img src="./assets/agents/cursor@2x.png" alt=""></span>
+                    </span>
+                  </div>
+                  <div class="tree-row tree-skill">
+                    <span class="tree-skill-icon">SK</span>
+                    <span>doc-writer</span>
+                  </div>
+                  <div class="tree-row tree-artifact">
+                    <span class="tree-icon">▾</span>
+                    <span>com.example:devops-skills:0.4.1</span>
+                  </div>
+                  <div class="tree-row tree-skill">
+                    <span class="tree-skill-icon">SK</span>
+                    <span>k8s-debug</span>
+                    <span class="tree-badges">
+                      <span class="tree-badge"><img src="./assets/agents/junie@2x.png" alt=""></span>
+                      <span class="tree-badge"><img src="./assets/agents/gemini@2x.png" alt=""></span>
+                    </span>
+                  </div>
+                  <div class="tree-row tree-skill">
+                    <span class="tree-skill-icon">SK</span>
+                    <span>terraform-plan-explainer</span>
+                    <span class="tree-badges">
+                      <span class="tree-badge"><img src="./assets/agents/qoder@2x.png" alt=""></span>
+                    </span>
+                  </div>
+                  <div class="tree-row tree-skill">
+                    <span class="tree-skill-icon">SK</span>
+                    <span>release-notes</span>
+                  </div>
+                  <div class="tree-row tree-artifact">
+                    <span class="tree-icon">▾</span>
+                    <span>com.example:web-skills:2.0.0-beta.3</span>
+                  </div>
+                  <div class="tree-row tree-skill">
+                    <span class="tree-skill-icon">SK</span>
+                    <span>a11y-audit</span>
+                    <span class="tree-badges">
+                      <span class="tree-badge"><img src="./assets/agents/trae@2x.png" alt=""></span>
+                      <span class="tree-badge"><img src="./assets/agents/codebuddy@2x.png" alt=""></span>
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================================================================
+           Agents matrix (扩展 Element 5 social proof + Element 6 media):
+           直观展示 "supports 9 agents" 比纯数字更有说服力
+           ================================================================ -->
+      <section class="agents-section" id="agents">
+        <div class="container">
+          <div class="section-head reveal">
+            <div class="section-eyebrow">Built for 9 agents</div>
+            <h2 class="section-title">One plugin, every coding agent.</h2>
+            <p class="section-lead">
+              Right-click any skill and pick a target. SkillsJars Helper writes
+              <code class="mono">SKILL.md</code> + assets to the agent's
+              well-known directory, plus a tiny <code class="mono">.skillsjars-helper.json</code>
+              manifest so future updates know exactly what changed.
+            </p>
+          </div>
+
+          <div class="agents-grid reveal-stagger">
+            <article class="agent-card">
+              <img src="./assets/agents/claude@2x.png" alt="Claude logo">
+              <div class="agent-name">Claude</div>
+              <div class="agent-path mono">.claude/skills/</div>
+            </article>
+            <article class="agent-card">
+              <img src="./assets/agents/codex@2x.png" alt="Codex logo">
+              <div class="agent-name">Codex</div>
+              <div class="agent-path mono">.codex/skills/</div>
+            </article>
+            <article class="agent-card">
+              <img src="./assets/agents/junie@2x.png" alt="Junie logo">
+              <div class="agent-name">Junie</div>
+              <div class="agent-path mono">.junie/skills/</div>
+            </article>
+            <article class="agent-card">
+              <img src="./assets/agents/cursor@2x.png" alt="Cursor logo">
+              <div class="agent-name">Cursor</div>
+              <div class="agent-path mono">.cursor/skills/</div>
+            </article>
+            <article class="agent-card">
+              <img src="./assets/agents/gemini@2x.png" alt="Gemini logo">
+              <div class="agent-name">Gemini</div>
+              <div class="agent-path mono">.gemini/skills/</div>
+            </article>
+            <article class="agent-card">
+              <img src="./assets/agents/qoder@2x.png" alt="Qoder logo">
+              <div class="agent-name">Qoder</div>
+              <div class="agent-path mono">.qoder/skills/</div>
+            </article>
+            <article class="agent-card">
+              <img src="./assets/agents/trae@2x.png" alt="Trae logo">
+              <div class="agent-name">Trae</div>
+              <div class="agent-path mono">.trae/skills/</div>
+            </article>
+            <article class="agent-card">
+              <img src="./assets/agents/codebuddy@2x.png" alt="CodeBuddy logo">
+              <div class="agent-name">CodeBuddy</div>
+              <div class="agent-path mono">.codebuddy/skills/</div>
+            </article>
+            <article class="agent-card">
+              <img src="./assets/agents/agents@2x.png" alt="Agents directory logo">
+              <div class="agent-name">.agents</div>
+              <div class="agent-path mono">.agents/skills/</div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================================================================
+           Element 7: Core benefits / features (bento, 6 cards, asymmetric)
+           ================================================================ -->
+      <section id="features">
+        <div class="container">
+          <div class="section-head reveal">
+            <div class="section-eyebrow">Why this plugin</div>
+            <h2 class="section-title">Less plumbing, more skill-building.</h2>
+            <p class="section-lead">
+              Every feature is built to remove a friction you've already lived through:
+              opening JARs by hand, copy-pasting SKILL.md, second-guessing whether the
+              local copy is still in sync.
+            </p>
+          </div>
+
+          <div class="benefits-grid reveal-stagger">
+            <article class="benefit benefit-1">
+              <div class="benefit-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                  <polyline points="14 2 14 8 20 8"/>
+                  <line x1="9" y1="13" x2="15" y2="13"/>
+                  <line x1="9" y1="17" x2="13" y2="17"/>
+                </svg>
+              </div>
+              <div class="benefit-num">01 / Discover</div>
+              <h3 class="benefit-title">Zero-extract preview.</h3>
+              <p class="benefit-desc">
+                Scans your Maven dependencies (regular and
+                <code class="mono">skillsjars-maven-plugin</code>) for
+                <code class="mono">META-INF/skills/**/SKILL.md</code> and renders them
+                directly. No <code class="mono">unzip</code>, no scratch directory, no manual
+                file diving.
+              </p>
+            </article>
+
+            <article class="benefit benefit-2">
+              <div class="benefit-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="3" width="7" height="7"/>
+                  <rect x="14" y="3" width="7" height="7"/>
+                  <rect x="3" y="14" width="7" height="7"/>
+                  <rect x="14" y="14" width="7" height="7"/>
+                </svg>
+              </div>
+              <div class="benefit-num">02 / Export</div>
+              <h3 class="benefit-title">9-agent hub.</h3>
+              <p class="benefit-desc">
+                Right-click → <em>Extract to ▸ Claude / Codex / Cursor / …</em>
+                — or any custom directory.
+              </p>
+            </article>
+
+            <article class="benefit benefit-3">
+              <div class="benefit-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 2 4 6v6c0 5 3.5 9 8 10 4.5-1 8-5 8-10V6z"/>
+                  <path d="m9 12 2 2 4-4"/>
+                </svg>
+              </div>
+              <div class="benefit-num">03 / Trust</div>
+              <h3 class="benefit-title">SHA-256 manifest.</h3>
+              <p class="benefit-desc">
+                Every export drops a <code class="mono">.skillsjars-helper.json</code>
+                with per-file hashes. Re-export later? It silently upgrades, asks before
+                clobbering local edits, and resolves same-name collisions deterministically.
+              </p>
+            </article>
+
+            <article class="benefit benefit-4">
+              <div class="benefit-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="9"/>
+                  <path d="M9 12h.01M12 12h.01M15 12h.01"/>
+                </svg>
+              </div>
+              <div class="benefit-num">04 / Visibility</div>
+              <h3 class="benefit-title">Live install badges.</h3>
+              <p class="benefit-desc">
+                The tool window shows a brand badge next to every skill that's already
+                installed to a given agent. State survives IDE restarts because it's
+                rebuilt by re-scanning the manifest from disk — not held in memory.
+              </p>
+            </article>
+
+            <article class="benefit benefit-5">
+              <div class="benefit-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M16 18 22 12 16 6"/>
+                  <path d="M8 6 2 12 8 18"/>
+                </svg>
+              </div>
+              <div class="benefit-num">05 / Extend</div>
+              <h3 class="benefit-title">Open extension API.</h3>
+              <p class="benefit-desc">
+                Implement <code class="mono">SkillSourceScanner</code> in your own plugin
+                to feed Gradle, SBT, or any custom build system into the same coordination
+                layer. The <code class="mono">api/</code> package is a stable contract.
+              </p>
+              <a
+                class="benefit-link"
+                href="https://github.com/dong4j/skillsjars-helper/blob/main/docs/extension-points.md"
+                target="_blank"
+                rel="noopener"
+              >
+                Read the integration guide
+                <span aria-hidden="true">→</span>
+              </a>
+            </article>
+
+            <article class="benefit benefit-6">
+              <div class="benefit-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 22a10 10 0 1 0-9-14"/>
+                  <path d="M3 12h6l-3 3"/>
+                </svg>
+              </div>
+              <div class="benefit-num">06 / Privacy</div>
+              <h3 class="benefit-title">Offline-first.</h3>
+              <p class="benefit-desc">
+                Reads your local Maven cache, writes your local agent directories.
+                No telemetry, no remote calls, no network dependency.
+              </p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================================================================
+           Element 8: Use cases (replaces fake testimonials).
+           理由: 项目暂时没有真实用户引用, 不能编造. 改成 4 类典型受众,
+           保持 social-proof 的功能但不造假.
+           ================================================================ -->
+      <section id="usecases">
+        <div class="container">
+          <div class="section-head reveal">
+            <div class="section-eyebrow">Who it's for</div>
+            <h2 class="section-title">Built for everyone wiring agents into a real workflow.</h2>
+            <p class="section-lead">
+              Replace the testimonials below with quotes from your team once you ship —
+              for now, here are the four scenarios SkillsJars Helper was designed around.
+            </p>
+          </div>
+
+          <div class="usecases-grid reveal-stagger">
+            <article class="usecase">
+              <span class="usecase-tag">Solo developer</span>
+              <h3 class="usecase-title">"I just want one Claude skill in this repo, fast."</h3>
+              <p class="usecase-body">
+                Drop a <code class="mono">com.example:agent-skills</code> dependency,
+                open the Agent Skills tool window, double-click to read the
+                <code class="mono">SKILL.md</code>, then right-click →
+                <strong>Extract to ▸ Claude</strong>. You're done in under a minute,
+                without ever touching <code class="mono">jar -tf</code>.
+              </p>
+            </article>
+
+            <article class="usecase">
+              <span class="usecase-tag">Team lead</span>
+              <h3 class="usecase-title">"Every team member needs the same skills, but each picks their agent."</h3>
+              <p class="usecase-body">
+                Pin SkillsJar versions in <code class="mono">pom.xml</code>. Each developer
+                exports the bundle to <strong>their</strong> agent of choice. The
+                <code class="mono">.skillsjars-helper.json</code> manifest keeps everyone
+                aligned on which artifact / version is installed where.
+              </p>
+            </article>
+
+            <article class="usecase">
+              <span class="usecase-tag">Plugin author</span>
+              <h3 class="usecase-title">"My company uses Bazel — I need to wire it into the same hub."</h3>
+              <p class="usecase-body">
+                Implement <code class="mono">SkillSourceScanner</code> in a tiny companion
+                plugin and register it under the
+                <code class="mono">skillSourceScanner</code> extension point. Your scanner
+                produces <strong>SkillJarSource</strong> instances; the rest — parsing,
+                dedup, UI, export — is reused as-is.
+              </p>
+            </article>
+
+            <article class="usecase">
+              <span class="usecase-tag">Agent enthusiast</span>
+              <h3 class="usecase-title">"I switch between Cursor and Codex weekly. Don't make me copy files."</h3>
+              <p class="usecase-body">
+                Same skill, two targets, two right-clicks. The plugin tracks both
+                installations independently, shows badges for both, and on the next
+                version bump silently upgrades whichever directories you've actually used.
+              </p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================================================================
+           Element 9: FAQ (8 真实问题, native <details> accordion)
+           ================================================================ -->
+      <section id="faq">
+        <div class="container">
+          <div class="section-head reveal">
+            <div class="section-eyebrow">FAQ</div>
+          </div>
+
+          <div class="faq-list reveal-stagger">
+            <details class="faq-item">
+              <summary>Which IDEs are supported?</summary>
+              <div class="faq-body">
+                IntelliJ IDEA Community / Ultimate <strong>2024.2 — 2026.1</strong> are the
+                official baseline. Other JetBrains IDEs built on the same platform
+                (PyCharm, GoLand, WebStorm, …) usually work within that build range,
+                but only IDEA is tested by CI.
+              </div>
+            </details>
+
+            <details class="faq-item">
+              <summary>I'm on Gradle, not Maven. Does it work?</summary>
+              <div class="faq-body">
+                Today the bundled scanner reads Maven dependencies and the
+                <code>skillsjars-maven-plugin</code>'s embedded <code>&lt;dependencies&gt;</code>.
+                Gradle is <strong>on the roadmap</strong>, and the contract is already public:
+                implement <code>SkillSourceScanner</code> in your own plugin and you can
+                wire Gradle (or SBT, Bazel, your in-house tool) into the same UI today.
+              </div>
+            </details>
+
+            <details class="faq-item">
+              <summary>Does it phone home?</summary>
+              <div class="faq-body">
+                No telemetry, no analytics, no remote calls. The plugin only reads your
+                local Maven cache and writes to local agent directories you explicitly
+                pick from a context menu.
+              </div>
+            </details>
+
+            <details class="faq-item">
+              <summary>How is this different from copy-pasting <code>SKILL.md</code> by hand?</summary>
+              <div class="faq-body">
+                Three concrete differences. <strong>(1)</strong> You don't have to unzip a
+                JAR to look at it. <strong>(2)</strong> Each export drops a manifest with
+                <code>sha256</code> per file, so the next export knows whether to silently
+                upgrade, ask before overwriting your local edits, or resolve a same-name
+                collision. <strong>(3)</strong> The tool window shows badges for every
+                target you've already installed to — across IDE restarts.
+              </div>
+            </details>
+
+            <details class="faq-item">
+              <summary>I edited the local SKILL.md. Will an upgrade overwrite me?</summary>
+              <div class="faq-body">
+                No. The manifest carries the original hashes, so a local edit is
+                detected and you get a yes/no confirmation dialog before anything is
+                written. If you intentionally want the upstream version back, just
+                accept; otherwise cancel and your edits are safe.
+              </div>
+            </details>
+
+            <details class="faq-item">
+              <summary>Two artifacts ship a skill with the same name. What happens?</summary>
+              <div class="faq-body">
+                The plugin detects a same-name collision from a different artifact and
+                offers three choices: <strong>overwrite</strong>, <strong>install with a
+                suffixed directory name</strong>, or <strong>cancel</strong>. The decision
+                is recorded in the manifest, so the next upgrade follows the same path.
+              </div>
+            </details>
+
+            <details class="faq-item">
+              <summary>Can I use the plugin's API from another plugin?</summary>
+              <div class="faq-body">
+                Yes. The <code>dev.dong4j.idea.skillsjars.helper.api</code> package is the
+                public contract: <code>SkillRegistry</code> for snapshots,
+                <code>SkillExportService</code> for programmatic export,
+                <code>SkillInstallationListener</code> for events, plus the
+                <code>skillSourceScanner</code> extension point. Breaking changes get
+                called out in the changelog.
+              </div>
+            </details>
+
+            <details class="faq-item">
+              <summary>Is it open source? What license?</summary>
+              <div class="faq-body">
+                Yes — <strong>MIT</strong>, sources on
+                <a href="https://github.com/dong4j/skillsjars-helper" target="_blank" rel="noopener">GitHub</a>.
+                Issues, PRs and scanner integrations are welcome.
+              </div>
+            </details>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================================================================
+           Element 10: Final CTA
+           ================================================================ -->
+      <section class="final-cta">
+        <div class="container">
+          <div class="final-cta-card reveal">
+            <h2 class="final-cta-title">Get started in 30 seconds.</h2>
+            <p class="final-cta-sub">
+              Install from JetBrains Marketplace, open any project that already has a
+              SkillsJar dependency, and the Agent Skills tool window appears on the right.
+              That's the whole onboarding.
+            </p>
+
+            <div class="final-cta-actions">
+              <a
+                class="btn btn-primary btn-lg"
+                href="https://plugins.jetbrains.com/plugin/31935-skillsjars-helper"
+                target="_blank"
+                rel="noopener"
+              >
+                Install on Marketplace
+                <span aria-hidden="true">→</span>
+              </a>
+              <a
+                class="btn btn-ghost btn-lg"
+                href="https://github.com/dong4j/skillsjars-helper"
+                target="_blank"
+                rel="noopener"
+              >
+                Browse the source
+              </a>
+            </div>
+
+            <div class="final-cta-meta">
+              <span>MIT licensed</span>
+              <span>Java 21</span>
+              <span>IntelliJ 2024.2 → 2026.1</span>
+              <span>v2026.1.1000</span>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- ================================================================
+         Element 11: Footer
+         ================================================================ -->
+    <footer class="site-footer">
+      <div class="container">
+        <div class="footer-grid">
+          <div class="footer-brand">
+            <a href="#top" class="brand">
+              <span class="brand-mark" aria-hidden="true">
+                <img src="./assets/plugin-icon.svg" alt="">
+              </span>
+              <span class="brand-name">
+                <span>SkillsJars Helper</span>
+              </span>
+            </a>
+            <p>
+              A JetBrains IDE plugin that turns Maven-distributed Agent Skills
+              into first-class IDE citizens — discover, preview and export
+              <code class="mono">SKILL.md</code> without unzipping a single JAR.
+            </p>
+          </div>
+
+          <div class="footer-col">
+            <h4>Product</h4>
+            <ul>
+              <li><a href="#features">Features</a></li>
+              <li><a href="#agents">Agents</a></li>
+              <li><a href="#usecases">Use cases</a></li>
+              <li><a href="#faq">FAQ</a></li>
+              <li>
+                <a
+                  href="https://plugins.jetbrains.com/plugin/31935-skillsjars-helper"
+                  target="_blank"
+                  rel="noopener"
+                >Marketplace</a>
+              </li>
+            </ul>
+          </div>
+
+          <div class="footer-col">
+            <h4>Resources</h4>
+            <ul>
+              <li>
+                <a href="https://github.com/dong4j/skillsjars-helper" target="_blank" rel="noopener">
+                  GitHub
+                </a>
+              </li>
+              <li>
+                <a href="https://github.com/dong4j/skillsjars-helper/blob/main/docs/extension-points.md" target="_blank" rel="noopener">
+                  Plugin integration guide
+                </a>
+              </li>
+              <li>
+                <a href="https://github.com/dong4j/skillsjars-helper/blob/main/docs/design.md" target="_blank" rel="noopener">
+                  Design doc
+                </a>
+              </li>
+              <li>
+                <a href="https://github.com/dong4j/skillsjars-helper/issues" target="_blank" rel="noopener">
+                  Report an issue
+                </a>
+              </li>
+              <li>
+                <a href="https://www.skillsjars.com/" target="_blank" rel="noopener">
+                  SkillsJars.com
+                </a>
+              </li>
+              <li>
+                <a href="https://docs.claude.com/en/docs/agents-and-tools/agent-skills/overview" target="_blank" rel="noopener">
+                  Agent Skills spec
+                </a>
+              </li>
+            </ul>
+          </div>
+
+          <div class="footer-col">
+            <h4>Author</h4>
+            <ul>
+              <li><a href="https://github.com/dong4j" target="_blank" rel="noopener">@dong4j</a></li>
+              <li>
+                <a
+                  href="https://plugins.jetbrains.com/vendor/9afaba35-91ea-4364-8ced-64db868dd23e"
+                  target="_blank"
+                  rel="noopener"
+                >Other plugins</a>
+              </li>
+              <li>
+                <a href="mailto:dong4j@gmail.com">Email</a>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="footer-bottom">
+          <span>© 2026 dong4j · MIT License</span>
+          <span>Made for JetBrains developers who use AI agents.</span>
+        </div>
+      </div>
+    </footer>
+
+    <script src="./assets/main.js" defer></script>
+  </body>
+</html>

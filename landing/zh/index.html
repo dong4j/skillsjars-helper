@@ -1,0 +1,708 @@
+<!doctype html>
+<!--
+  SkillsJars Helper — 中文版 Landing Page
+  ---------------------------------------------------------------------------
+  与英文版 (../index.html) 1:1 信息架构对齐, 文案根据中文表达习惯重新撰写
+  (而非机械翻译). 所有静态资源 (styles.css / main.js / banner / agent icons)
+  都通过相对路径 ../assets/... 复用根目录, 不重复打包.
+-->
+<html lang="zh-Hans">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#0A0A0B">
+
+    <title>SkillsJars Helper — 在 JetBrains IDE 内管理 Agent Skills | dong4j</title>
+    <meta
+      name="description"
+      content="一款 JetBrains IDE 插件, 把以 Maven artifact 形式分发的 Agent Skills (SkillsJars) 变成 IDE 一等公民. 在 IDE 内发现 / 预览 / 一键导出 SKILL.md 到 Claude / Codex / Junie / Cursor / Gemini / Qoder / Trae / CodeBuddy 或自定义目录, 全程不用解压 JAR."
+    >
+    <meta
+      name="keywords"
+      content="SkillsJars, Agent Skills, JetBrains 插件, IntelliJ IDEA 插件, Claude skills, Codex skills, Cursor skills, Junie skills, SKILL.md, Maven Agent Skills"
+    >
+    <meta name="author" content="dong4j">
+
+    <meta property="og:type" content="website">
+    <meta property="og:locale" content="zh_CN">
+    <meta property="og:title" content="SkillsJars Helper — JetBrains 原生的 Agent Skills 管理器">
+    <meta
+      property="og:description"
+      content="不解压 JAR, 在 IDE 内发现 / 预览 / 导出 Agent Skills (SKILL.md). 支持 9 个 Agent, 智能冲突检测, 公开扩展 API."
+    >
+    <meta property="og:image" content="../assets/banner.png">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="SkillsJars Helper — JetBrains 原生的 Agent Skills 管理器">
+    <meta name="twitter:description" content="像管理 Maven 依赖一样, 在 JetBrains IDE 内管理 Agent Skills.">
+    <meta name="twitter:image" content="../assets/banner.png">
+
+    <link rel="alternate" hreflang="en" href="../">
+    <link rel="alternate" hreflang="zh-Hans" href="./">
+
+    <link rel="icon" type="image/svg+xml" href="../assets/plugin-icon.svg">
+    <link rel="alternate icon" type="image/png" href="../assets/agents/agents@2x.png">
+    <link rel="apple-touch-icon" href="../assets/agents/agents@2x.png">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    >
+
+    <link rel="stylesheet" href="../assets/styles.css">
+  </head>
+
+  <body>
+    <header class="site-header" data-scrolled="false">
+      <div class="container nav">
+        <a href="#top" class="brand" aria-label="SkillsJars Helper 首页">
+          <span class="brand-mark" aria-hidden="true">
+            <img src="../assets/plugin-icon.svg" alt="">
+          </span>
+          <span class="brand-name">
+            <span>SkillsJars Helper</span>
+            <span class="brand-name-sub">v2026.1</span>
+          </span>
+        </a>
+
+        <nav aria-label="主导航">
+          <ul class="nav-links">
+            <li><a href="#features">功能</a></li>
+            <li><a href="#agents">Agent</a></li>
+            <li><a href="#usecases">适用场景</a></li>
+            <li><a href="#faq">常见问题</a></li>
+          </ul>
+        </nav>
+
+        <div class="nav-actions">
+          <div class="lang-switch" role="group" aria-label="切换语言">
+            <a href="../">EN</a>
+            <a href="./" aria-current="true">中文</a>
+          </div>
+          <a
+            class="nav-cta"
+            href="https://plugins.jetbrains.com/plugin/31935-skillsjars-helper"
+            target="_blank"
+            rel="noopener"
+          >
+            安装
+            <span aria-hidden="true">→</span>
+          </a>
+        </div>
+      </div>
+    </header>
+
+    <main id="top">
+      <!-- Hero -->
+      <section class="hero" id="hero">
+        <div class="container hero-grid">
+          <div>
+            <div class="hero-eyebrow">
+              <span class="badge">
+                <span class="badge-dot" aria-hidden="true"></span>
+                兼容 IntelliJ Platform 2024.2 → 2026.1 · Java 21
+              </span>
+            </div>
+
+            <h1 class="hero-title">
+              像管理 Maven 依赖一样, 管理 Agent Skills.
+              <em>不用解压任何一个 JAR.</em>
+            </h1>
+
+            <p class="hero-sub">
+              SkillsJars Helper 把以 <code class="mono">Maven artifact</code>
+              形式分发的 <code class="mono">SKILL.md</code> 变成 JetBrains IDE
+              一等公民. 在 IDE 内发现 / 预览 / 一键导出到 <strong>9 个 Agent</strong>
+              的本地目录, 不离开编辑器.
+            </p>
+
+            <div class="hero-cta">
+              <a
+                class="btn btn-primary btn-lg"
+                href="https://plugins.jetbrains.com/plugin/31935-skillsjars-helper"
+                target="_blank"
+                rel="noopener"
+              >
+                在 Marketplace 安装
+                <span aria-hidden="true">→</span>
+              </a>
+              <a
+                class="btn btn-ghost btn-lg"
+                href="https://github.com/dong4j/skillsjars-helper"
+                target="_blank"
+                rel="noopener"
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                  <path d="M12 .3a12 12 0 0 0-3.79 23.4c.6.1.82-.26.82-.58v-2c-3.34.72-4.04-1.61-4.04-1.61-.55-1.39-1.34-1.76-1.34-1.76-1.09-.74.08-.73.08-.73 1.21.09 1.85 1.24 1.85 1.24 1.07 1.83 2.81 1.3 3.5 1 .1-.78.42-1.3.76-1.6-2.66-.3-5.46-1.33-5.46-5.93 0-1.31.47-2.38 1.24-3.22-.13-.3-.54-1.52.12-3.18 0 0 1.01-.32 3.3 1.23a11.5 11.5 0 0 1 6 0c2.29-1.55 3.3-1.23 3.3-1.23.66 1.66.25 2.88.12 3.18.77.84 1.24 1.91 1.24 3.22 0 4.61-2.81 5.62-5.48 5.92.43.37.81 1.1.81 2.22v3.29c0 .32.21.69.83.58A12 12 0 0 0 12 .3z"/>
+                </svg>
+                在 GitHub 上 Star
+              </a>
+            </div>
+
+            <div class="hero-proof" aria-label="核心数据">
+              <div class="proof-stat">
+                <div class="proof-num"><em>9</em></div>
+                <div class="proof-label">支持的 Agent</div>
+              </div>
+              <div class="proof-stat">
+                <div class="proof-num"><em>0</em></div>
+                <div class="proof-label">解压 JAR 次数</div>
+              </div>
+              <div class="proof-stat">
+                <div class="proof-num">MIT</div>
+                <div class="proof-label">开源协议</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Hero IDE mock-up — 工程标识符保留英文, 跟真实 IDE 体验一致 -->
+          <div aria-hidden="true">
+            <div class="ide-mock">
+              <div class="ide-mock-titlebar">
+                <span class="dot"></span>
+                <span class="dot"></span>
+                <span class="dot"></span>
+                <span class="tab">Agent Skills</span>
+              </div>
+              <div class="ide-mock-body">
+                <div class="ide-mock-rail">
+                  <span class="rail-item">Project</span>
+                  <span class="rail-item active">Skills</span>
+                  <span class="rail-item">Notes</span>
+                </div>
+                <div class="ide-mock-tree">
+                  <div class="tree-row tree-artifact">
+                    <span class="tree-icon">▾</span>
+                    <span>com.example:agent-skills:1.2.0</span>
+                  </div>
+                  <div class="tree-row tree-skill">
+                    <span class="tree-skill-icon">SK</span>
+                    <span>code-reviewer</span>
+                    <span class="tree-badges">
+                      <span class="tree-badge"><img src="../assets/agents/claude@2x.png" alt=""></span>
+                      <span class="tree-badge"><img src="../assets/agents/codex@2x.png" alt=""></span>
+                    </span>
+                  </div>
+                  <div class="tree-row tree-skill">
+                    <span class="tree-skill-icon">SK</span>
+                    <span>commit-helper</span>
+                    <span class="tree-badges">
+                      <span class="tree-badge"><img src="../assets/agents/cursor@2x.png" alt=""></span>
+                    </span>
+                  </div>
+                  <div class="tree-row tree-skill">
+                    <span class="tree-skill-icon">SK</span>
+                    <span>doc-writer</span>
+                  </div>
+                  <div class="tree-row tree-artifact">
+                    <span class="tree-icon">▾</span>
+                    <span>com.example:devops-skills:0.4.1</span>
+                  </div>
+                  <div class="tree-row tree-skill">
+                    <span class="tree-skill-icon">SK</span>
+                    <span>k8s-debug</span>
+                    <span class="tree-badges">
+                      <span class="tree-badge"><img src="../assets/agents/junie@2x.png" alt=""></span>
+                      <span class="tree-badge"><img src="../assets/agents/gemini@2x.png" alt=""></span>
+                    </span>
+                  </div>
+                  <div class="tree-row tree-skill">
+                    <span class="tree-skill-icon">SK</span>
+                    <span>terraform-plan-explainer</span>
+                    <span class="tree-badges">
+                      <span class="tree-badge"><img src="../assets/agents/qoder@2x.png" alt=""></span>
+                    </span>
+                  </div>
+                  <div class="tree-row tree-skill">
+                    <span class="tree-skill-icon">SK</span>
+                    <span>release-notes</span>
+                  </div>
+                  <div class="tree-row tree-artifact">
+                    <span class="tree-icon">▾</span>
+                    <span>com.example:web-skills:2.0.0-beta.3</span>
+                  </div>
+                  <div class="tree-row tree-skill">
+                    <span class="tree-skill-icon">SK</span>
+                    <span>a11y-audit</span>
+                    <span class="tree-badges">
+                      <span class="tree-badge"><img src="../assets/agents/trae@2x.png" alt=""></span>
+                      <span class="tree-badge"><img src="../assets/agents/codebuddy@2x.png" alt=""></span>
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Agents matrix -->
+      <section class="agents-section" id="agents">
+        <div class="container">
+          <div class="section-head reveal">
+            <div class="section-eyebrow">为 9 个 Agent 而生</div>
+            <h2 class="section-title">一个插件, 服务每一种 coding agent.</h2>
+            <p class="section-lead">
+              右键任意 skill, 选一个目标. SkillsJars Helper 把
+              <code class="mono">SKILL.md</code> 与资源写到该 Agent 的标准目录,
+              同时落一份 <code class="mono">.skillsjars-helper.json</code> manifest,
+              让以后的升级清楚知道改了什么.
+            </p>
+          </div>
+
+          <div class="agents-grid reveal-stagger">
+            <article class="agent-card">
+              <img src="../assets/agents/claude@2x.png" alt="Claude logo">
+              <div class="agent-name">Claude</div>
+              <div class="agent-path mono">.claude/skills/</div>
+            </article>
+            <article class="agent-card">
+              <img src="../assets/agents/codex@2x.png" alt="Codex logo">
+              <div class="agent-name">Codex</div>
+              <div class="agent-path mono">.codex/skills/</div>
+            </article>
+            <article class="agent-card">
+              <img src="../assets/agents/junie@2x.png" alt="Junie logo">
+              <div class="agent-name">Junie</div>
+              <div class="agent-path mono">.junie/skills/</div>
+            </article>
+            <article class="agent-card">
+              <img src="../assets/agents/cursor@2x.png" alt="Cursor logo">
+              <div class="agent-name">Cursor</div>
+              <div class="agent-path mono">.cursor/skills/</div>
+            </article>
+            <article class="agent-card">
+              <img src="../assets/agents/gemini@2x.png" alt="Gemini logo">
+              <div class="agent-name">Gemini</div>
+              <div class="agent-path mono">.gemini/skills/</div>
+            </article>
+            <article class="agent-card">
+              <img src="../assets/agents/qoder@2x.png" alt="Qoder logo">
+              <div class="agent-name">Qoder</div>
+              <div class="agent-path mono">.qoder/skills/</div>
+            </article>
+            <article class="agent-card">
+              <img src="../assets/agents/trae@2x.png" alt="Trae logo">
+              <div class="agent-name">Trae</div>
+              <div class="agent-path mono">.trae/skills/</div>
+            </article>
+            <article class="agent-card">
+              <img src="../assets/agents/codebuddy@2x.png" alt="CodeBuddy logo">
+              <div class="agent-name">CodeBuddy</div>
+              <div class="agent-path mono">.codebuddy/skills/</div>
+            </article>
+            <article class="agent-card">
+              <img src="../assets/agents/agents@2x.png" alt=".agents 目录 logo">
+              <div class="agent-name">.agents</div>
+              <div class="agent-path mono">.agents/skills/</div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <!-- Features -->
+      <section id="features">
+        <div class="container">
+          <div class="section-head reveal">
+            <div class="section-eyebrow">为什么选这个插件</div>
+            <h2 class="section-title">少动手, 多积累 skill.</h2>
+            <p class="section-lead">
+              每个功能都对应一种你已经经历过的摩擦: 手动解压 JAR, 复制粘贴
+              SKILL.md, 不确定本地版本是不是跟上游一致.
+            </p>
+          </div>
+
+          <div class="benefits-grid reveal-stagger">
+            <article class="benefit benefit-1">
+              <div class="benefit-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                  <polyline points="14 2 14 8 20 8"/>
+                  <line x1="9" y1="13" x2="15" y2="13"/>
+                  <line x1="9" y1="17" x2="13" y2="17"/>
+                </svg>
+              </div>
+              <div class="benefit-num">01 / 发现</div>
+              <h3 class="benefit-title">零解压预览.</h3>
+              <p class="benefit-desc">
+                扫描 Maven 普通依赖与 <code class="mono">skillsjars-maven-plugin</code>
+                的 dependencies, 直接渲染
+                <code class="mono">META-INF/skills/**/SKILL.md</code>.
+                无需 <code class="mono">unzip</code>, 无需临时目录, 无需手动翻文件.
+              </p>
+            </article>
+
+            <article class="benefit benefit-2">
+              <div class="benefit-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="3" width="7" height="7"/>
+                  <rect x="14" y="3" width="7" height="7"/>
+                  <rect x="3" y="14" width="7" height="7"/>
+                  <rect x="14" y="14" width="7" height="7"/>
+                </svg>
+              </div>
+              <div class="benefit-num">02 / 导出</div>
+              <h3 class="benefit-title">9 Agent 枢纽.</h3>
+              <p class="benefit-desc">
+                右键 → <em>导出至 ▸ Claude / Codex / Cursor / …</em>
+                或者任意自定义目录.
+              </p>
+            </article>
+
+            <article class="benefit benefit-3">
+              <div class="benefit-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 2 4 6v6c0 5 3.5 9 8 10 4.5-1 8-5 8-10V6z"/>
+                  <path d="m9 12 2 2 4-4"/>
+                </svg>
+              </div>
+              <div class="benefit-num">03 / 信任</div>
+              <h3 class="benefit-title">SHA-256 manifest.</h3>
+              <p class="benefit-desc">
+                每次导出会落一份 <code class="mono">.skillsjars-helper.json</code>,
+                含每个文件的 hash. 再次导出时, 自动决策: 静默升级, 询问是否覆盖
+                本地修改, 或处理同名冲突.
+              </p>
+            </article>
+
+            <article class="benefit benefit-4">
+              <div class="benefit-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="9"/>
+                  <path d="M9 12h.01M12 12h.01M15 12h.01"/>
+                </svg>
+              </div>
+              <div class="benefit-num">04 / 可见</div>
+              <h3 class="benefit-title">安装状态徽标.</h3>
+              <p class="benefit-desc">
+                工具窗在每个 skill 旁显示已安装到的 Agent 品牌徽标. 状态从磁盘
+                manifest 重扫得到, IDE 重启不丢, 不依赖内存缓存.
+              </p>
+            </article>
+
+            <article class="benefit benefit-5">
+              <div class="benefit-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M16 18 22 12 16 6"/>
+                  <path d="M8 6 2 12 8 18"/>
+                </svg>
+              </div>
+              <div class="benefit-num">05 / 扩展</div>
+              <h3 class="benefit-title">开放扩展 API.</h3>
+              <p class="benefit-desc">
+                在你自己的插件里实现 <code class="mono">SkillSourceScanner</code>,
+                就能把 Gradle / SBT / 自有构建系统接入同一套协调层.
+                <code class="mono">api/</code> 包是稳定的对外契约.
+              </p>
+              <a
+                class="benefit-link"
+                href="https://github.com/dong4j/skillsjars-helper/blob/main/docs/extension-points.md"
+                target="_blank"
+                rel="noopener"
+              >
+                阅读第三方插件集成指南
+                <span aria-hidden="true">→</span>
+              </a>
+            </article>
+
+            <article class="benefit benefit-6">
+              <div class="benefit-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 22a10 10 0 1 0-9-14"/>
+                  <path d="M3 12h6l-3 3"/>
+                </svg>
+              </div>
+              <div class="benefit-num">06 / 隐私</div>
+              <h3 class="benefit-title">离线优先.</h3>
+              <p class="benefit-desc">
+                只读本地 Maven 缓存, 只写本地 Agent 目录.
+                无遥测, 无远程调用, 无网络依赖.
+              </p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <!-- Use cases -->
+      <section id="usecases">
+        <div class="container">
+          <div class="section-head reveal">
+            <div class="section-eyebrow">适合谁</div>
+            <h2 class="section-title">面向所有把 Agent 接入真实工作流的人.</h2>
+            <p class="section-lead">
+              等积累了真实用户引用后, 这一区可以换成团队反馈 — 在那之前,
+              先把 SkillsJars Helper 服务的 4 类典型场景列在这里.
+            </p>
+          </div>
+
+          <div class="usecases-grid reveal-stagger">
+            <article class="usecase">
+              <span class="usecase-tag">个人开发者</span>
+              <h3 class="usecase-title">"我只想给这个仓库快速装一个 Claude skill."</h3>
+              <p class="usecase-body">
+                在 <code class="mono">pom.xml</code> 里加一条
+                <code class="mono">com.example:agent-skills</code> 依赖, 打开
+                Agent Skills 工具窗, 双击读 <code class="mono">SKILL.md</code>,
+                然后右键 → <strong>导出至 ▸ Claude</strong>. 一分钟内搞定,
+                全程不碰 <code class="mono">jar -tf</code>.
+              </p>
+            </article>
+
+            <article class="usecase">
+              <span class="usecase-tag">团队负责人</span>
+              <h3 class="usecase-title">"全员要装同一组 skill, 但每个人用的 Agent 不一样."</h3>
+              <p class="usecase-body">
+                在 <code class="mono">pom.xml</code> 里把 SkillsJar 版本钉死.
+                每个开发者把 skill bundle 导出到自己用的 Agent.
+                <code class="mono">.skillsjars-helper.json</code> manifest 让大家
+                对齐 — 谁的哪个 artifact / 版本 装到了哪里.
+              </p>
+            </article>
+
+            <article class="usecase">
+              <span class="usecase-tag">插件作者</span>
+              <h3 class="usecase-title">"我们公司用 Bazel, 想接入这个枢纽."</h3>
+              <p class="usecase-body">
+                在自己的小插件里实现 <code class="mono">SkillSourceScanner</code>,
+                通过 <code class="mono">skillSourceScanner</code> 扩展点注册即可.
+                你的 scanner 只负责给出 <strong>SkillJarSource</strong>;
+                解析 / 去重 / UI / 导出 全部直接复用.
+              </p>
+            </article>
+
+            <article class="usecase">
+              <span class="usecase-tag">Agent 重度用户</span>
+              <h3 class="usecase-title">"我每周在 Cursor / Codex 之间切换, 别让我一直拷文件."</h3>
+              <p class="usecase-body">
+                同一个 skill, 两个目标, 两次右键. 插件分别记录两个安装位置,
+                两个徽标都显示. 下次版本升级时, 静默升级你实际用过的目录.
+              </p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <!-- FAQ -->
+      <section id="faq">
+        <div class="container">
+          <div class="section-head reveal">
+            <div class="section-eyebrow">常见问题</div>
+          </div>
+
+          <div class="faq-list reveal-stagger">
+            <details class="faq-item">
+              <summary>支持哪些 IDE?</summary>
+              <div class="faq-body">
+                IntelliJ IDEA Community / Ultimate
+                <strong>2024.2 — 2026.1</strong> 是官方测试基线. 其他基于同一
+                平台的 JetBrains IDE (PyCharm, GoLand, WebStorm 等) 在该 build
+                区间内通常可用, 但 CI 只覆盖 IDEA.
+              </div>
+            </details>
+
+            <details class="faq-item">
+              <summary>我用 Gradle 不用 Maven, 行吗?</summary>
+              <div class="faq-body">
+                目前内置 scanner 只读 Maven 普通依赖与
+                <code>skillsjars-maven-plugin</code> 的内嵌
+                <code>&lt;dependencies&gt;</code>. Gradle 在路线图里. 同时这块
+                的对外契约已经公开: 在你自己的插件里实现
+                <code>SkillSourceScanner</code>, 立刻就能把 Gradle / SBT /
+                Bazel / 自有工具接到同一套 UI 上.
+              </div>
+            </details>
+
+            <details class="faq-item">
+              <summary>会不会偷偷联网?</summary>
+              <div class="faq-body">
+                无遥测, 无埋点, 无远程调用. 插件只读本地 Maven 缓存,
+                只写你从右键菜单明确指定的本地 Agent 目录.
+              </div>
+            </details>
+
+            <details class="faq-item">
+              <summary>跟手动复制粘贴 <code>SKILL.md</code> 比有什么不同?</summary>
+              <div class="faq-body">
+                三个具体差别. <strong>(1)</strong> 不用解压 JAR 也能看.
+                <strong>(2)</strong> 每次导出会落一份带 <code>sha256</code>
+                的 manifest, 下次导出时插件知道是该静默升级, 还是询问是否覆盖
+                本地修改, 还是处理同名冲突. <strong>(3)</strong> 工具窗会展示
+                已经安装到每个 Agent 的徽标 — IDE 重启不丢.
+              </div>
+            </details>
+
+            <details class="faq-item">
+              <summary>我改了本地 SKILL.md, 升级会被覆盖吗?</summary>
+              <div class="faq-body">
+                不会. manifest 记录原始 hash, 本地修改会被检测到, 写入前会弹出
+                yes/no 确认. 如果你确实想要回上游版本, 点 yes; 否则取消,
+                你的修改安全无虞.
+              </div>
+            </details>
+
+            <details class="faq-item">
+              <summary>两个 artifact 都带了同名 skill 怎么办?</summary>
+              <div class="faq-body">
+                插件会检测到来自不同 artifact 的同名冲突, 给出三个选项:
+                <strong>覆盖</strong>, <strong>用带后缀的目录名安装</strong>,
+                或 <strong>取消</strong>. 决定记录到 manifest, 下次升级
+                遵循同一个选择.
+              </div>
+            </details>
+
+            <details class="faq-item">
+              <summary>能在我自己的插件里调用这个插件的 API 吗?</summary>
+              <div class="faq-body">
+                可以. <code>dev.dong4j.idea.skillsjars.helper.api</code> 包是
+                公共契约: <code>SkillRegistry</code> 用于查询快照,
+                <code>SkillExportService</code> 用于编程式导出,
+                <code>SkillInstallationListener</code> 监听事件, 加上
+                <code>skillSourceScanner</code> 扩展点. 破坏性变更会在
+                changelog 里显式注明.
+              </div>
+            </details>
+
+            <details class="faq-item">
+              <summary>开源吗? 什么协议?</summary>
+              <div class="faq-body">
+                是 — <strong>MIT</strong>, 源码在
+                <a href="https://github.com/dong4j/skillsjars-helper" target="_blank" rel="noopener">GitHub</a>.
+                欢迎 issue, PR, 以及 scanner 接入.
+              </div>
+            </details>
+          </div>
+        </div>
+      </section>
+
+      <!-- Final CTA -->
+      <section class="final-cta">
+        <div class="container">
+          <div class="final-cta-card reveal">
+            <h2 class="final-cta-title">30 秒内开始.</h2>
+            <p class="final-cta-sub">
+              在 JetBrains Marketplace 安装, 打开任意已经依赖 SkillsJar 的项目,
+              右侧出现 Agent Skills 工具窗. 整个引导就这样.
+            </p>
+
+            <div class="final-cta-actions">
+              <a
+                class="btn btn-primary btn-lg"
+                href="https://plugins.jetbrains.com/plugin/31935-skillsjars-helper"
+                target="_blank"
+                rel="noopener"
+              >
+                在 Marketplace 安装
+                <span aria-hidden="true">→</span>
+              </a>
+              <a
+                class="btn btn-ghost btn-lg"
+                href="https://github.com/dong4j/skillsjars-helper"
+                target="_blank"
+                rel="noopener"
+              >
+                查看源代码
+              </a>
+            </div>
+
+            <div class="final-cta-meta">
+              <span>MIT 协议</span>
+              <span>Java 21</span>
+              <span>IntelliJ 2024.2 → 2026.1</span>
+              <span>v2026.1.1000</span>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+      <div class="container">
+        <div class="footer-grid">
+          <div class="footer-brand">
+            <a href="#top" class="brand">
+              <span class="brand-mark" aria-hidden="true">
+                <img src="../assets/plugin-icon.svg" alt="">
+              </span>
+              <span class="brand-name">
+                <span>SkillsJars Helper</span>
+              </span>
+            </a>
+            <p>
+              一款 JetBrains IDE 插件, 把以 Maven artifact 形式分发的
+              Agent Skills 变成 IDE 一等公民 — 不解压任何 JAR 就能发现 / 预览 /
+              导出 <code class="mono">SKILL.md</code>.
+            </p>
+          </div>
+
+          <div class="footer-col">
+            <h4>产品</h4>
+            <ul>
+              <li><a href="#features">功能</a></li>
+              <li><a href="#agents">Agent</a></li>
+              <li><a href="#usecases">适用场景</a></li>
+              <li><a href="#faq">常见问题</a></li>
+              <li>
+                <a
+                  href="https://plugins.jetbrains.com/plugin/31935-skillsjars-helper"
+                  target="_blank"
+                  rel="noopener"
+                >Marketplace</a>
+              </li>
+            </ul>
+          </div>
+
+          <div class="footer-col">
+            <h4>资源</h4>
+            <ul>
+              <li>
+                <a href="https://github.com/dong4j/skillsjars-helper" target="_blank" rel="noopener">GitHub</a>
+              </li>
+              <li>
+                <a href="https://github.com/dong4j/skillsjars-helper/blob/main/docs/extension-points.md" target="_blank" rel="noopener">第三方插件集成指南</a>
+              </li>
+              <li>
+                <a href="https://github.com/dong4j/skillsjars-helper/blob/main/docs/design.md" target="_blank" rel="noopener">设计文档</a>
+              </li>
+              <li>
+                <a href="https://github.com/dong4j/skillsjars-helper/issues" target="_blank" rel="noopener">提交 issue</a>
+              </li>
+              <li>
+                <a href="https://www.skillsjars.com/" target="_blank" rel="noopener">SkillsJars.com</a>
+              </li>
+              <li>
+                <a href="https://docs.claude.com/en/docs/agents-and-tools/agent-skills/overview" target="_blank" rel="noopener">Agent Skills 规范</a>
+              </li>
+            </ul>
+          </div>
+
+          <div class="footer-col">
+            <h4>作者</h4>
+            <ul>
+              <li><a href="https://github.com/dong4j" target="_blank" rel="noopener">@dong4j</a></li>
+              <li>
+                <a
+                  href="https://plugins.jetbrains.com/vendor/9afaba35-91ea-4364-8ced-64db868dd23e"
+                  target="_blank"
+                  rel="noopener"
+                >其他插件</a>
+              </li>
+              <li>
+                <a href="mailto:dong4j@gmail.com">邮箱</a>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="footer-bottom">
+          <span>© 2026 dong4j · MIT 协议</span>
+          <span>为使用 AI Agent 的 JetBrains 开发者而做.</span>
+        </div>
+      </div>
+    </footer>
+
+    <script src="../assets/main.js" defer></script>
+  </body>
+</html>
