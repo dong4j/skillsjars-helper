@@ -26,6 +26,7 @@ import dev.dong4j.idea.skillsjars.helper.api.model.InstallationStatus;
 import dev.dong4j.idea.skillsjars.helper.api.model.SkillDescriptor;
 import dev.dong4j.idea.skillsjars.helper.api.model.SkillFileEntry;
 import dev.dong4j.idea.skillsjars.helper.api.model.SkillJarArtifact;
+import dev.dong4j.idea.skillsjars.helper.parser.JarPathUtil;
 
 /**
  * 真正落盘的导出执行器.
@@ -81,11 +82,7 @@ public final class ExportExecutor {
             Files.createDirectories(tempDir);
 
             // 3. 复制 skill 内容到临时目录, 同时收集每文件 sha256 用于 manifest
-            String jarPath = artifact.getJarFile().getPath();
-            int sep = jarPath.indexOf("!/");
-            if (sep >= 0) {
-                jarPath = jarPath.substring(0, sep);
-            }
+            String jarPath = JarPathUtil.stripJarSuffix(artifact.getJarFile().getPath());
             List<ManifestSchema.FileEntry> manifestFiles;
             try (JarFile jar = new JarFile(Path.of(jarPath).toFile())) {
                 manifestFiles = copyFilesAndHash(jar, skill, tempDir);
@@ -167,8 +164,9 @@ public final class ExportExecutor {
         SkillJarArtifact artifact = plan.getArtifact();
         SkillDescriptor skill = plan.getSkill();
 
-        // 来源 jar 的内容指纹: 用 ExportPlanner 的同一聚合算法保证 OUTDATED 判定一致
-        String sourceJarSha = ExportPlanner.computeSkillSha(artifact, skill);
+        // 来源 jar 的内容指纹: 与 ExportPlanner 共享 SkillContentHasher, 保证下一次 plan
+        // 时 OUTDATED 判定能用同一算法对得上.
+        String sourceJarSha = SkillContentHasher.hash(artifact, skill);
         if (sourceJarSha == null) {
             sourceJarSha = "";
         }

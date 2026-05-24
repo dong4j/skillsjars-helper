@@ -6,11 +6,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
 
 import dev.dong4j.idea.skillsjars.helper.api.model.ExportPlan;
 import dev.dong4j.idea.skillsjars.helper.api.model.InstallationStatus;
@@ -75,7 +72,7 @@ public final class ExportPlanner {
                 status = InstallationStatus.DUPLICATE_NAME;
                 conflictCoord = existing.getArtifact();
             } else {
-                String currentJarSha = computeSkillSha(artifact, skill);
+                String currentJarSha = SkillContentHasher.hash(artifact, skill);
                 if (currentJarSha == null) {
                     // jar 暂时不可读, 视为 OUTDATED 让用户主动覆盖
                     status = InstallationStatus.OUTDATED;
@@ -147,47 +144,4 @@ public final class ExportPlanner {
         return false;
     }
 
-    /**
-     * 计算 "当前 skill 的 jar 内内容指纹".
-     *
-     * <p>不用整个 jar 的 sha (同 jar 内其他 skill 的变化不应触发本 skill 的 OUTDATED);
-     * 也不用单一 SKILL.md 的 sha (同 skill 内的辅助文件 examples / scripts 变化也应触发).
-     * 实现: 把该 skill 根目录下所有文件的 (path + sha) 拼成一个聚合字符串再求一次 sha. </p>
-     */
-    @Nullable
-    static String computeSkillSha(@NotNull SkillJarArtifact artifact, @NotNull SkillDescriptor skill) {
-        String jarPath = artifact.getJarFile().getPath();
-        int sep = jarPath.indexOf("!/");
-        if (sep >= 0) {
-            jarPath = jarPath.substring(0, sep);
-        }
-        Path path = Path.of(jarPath);
-        if (!Files.isRegularFile(path)) {
-            return null;
-        }
-        try (JarFile jar = new JarFile(path.toFile())) {
-            StringBuilder digestSource = new StringBuilder();
-            // skill.files 已经按 jar entry 顺序记录, 但为了保证哈希稳定性按 path 排序
-            java.util.List<dev.dong4j.idea.skillsjars.helper.api.model.SkillFileEntry> sorted =
-                new java.util.ArrayList<>(skill.getFiles());
-            sorted.sort(java.util.Comparator.comparing(
-                dev.dong4j.idea.skillsjars.helper.api.model.SkillFileEntry::getRelativePath));
-            for (var f : sorted) {
-                String entryName = skill.getJarEntryRoot() + f.getRelativePath();
-                JarEntry entry = jar.getJarEntry(entryName);
-                if (entry == null) {
-                    return null;
-                }
-                String fileSha;
-                try (InputStream in = jar.getInputStream(entry)) {
-                    fileSha = HashUtil.sha256Stream(in);
-                }
-                digestSource.append(f.getRelativePath()).append(':').append(fileSha).append('\n');
-            }
-            return HashUtil.sha256(digestSource.toString().getBytes(java.nio.charset.StandardCharsets.UTF_8));
-        } catch (IOException e) {
-            LOG.debug("Failed to hash jar " + path, e);
-            return null;
-        }
-    }
 }

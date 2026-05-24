@@ -119,10 +119,10 @@ public final class SkillRegistryService implements SkillRegistry, Disposable {
     @Override
     @NotNull
     public List<SkillJarArtifact> findByCoordinate(@NotNull String coordinate) {
-        SkillCoordinate target = parseQuery(coordinate);
+        SkillCoordinate query = SkillCoordinate.parseQuery(coordinate);
         List<SkillJarArtifact> result = new ArrayList<>();
         for (SkillJarArtifact artifact : this.snapshot.get()) {
-            if (matches(target, artifact.getCoordinate())) {
+            if (query.matches(artifact.getCoordinate())) {
                 result.add(artifact);
             }
         }
@@ -135,7 +135,7 @@ public final class SkillRegistryService implements SkillRegistry, Disposable {
             return;
         }
         this.refreshing = true;
-        ProgressManager.getInstance().run(new Task.Backgroundable(this.project, "Scanning SkillsJars", true) {
+        ProgressManager.getInstance().run(new Task.Backgroundable(this.project, "Scanning skillsJars", true) {
             @Override
             public void run(@NotNull ProgressIndicator indicator) {
                 try {
@@ -223,7 +223,7 @@ public final class SkillRegistryService implements SkillRegistry, Disposable {
                 source.getSourceType(),
                 source.getCoordinate(),
                 source.getDisplayName()
-            );
+                                                         );
             if (artifact != null) {
                 result.add(artifact);
             }
@@ -262,31 +262,4 @@ public final class SkillRegistryService implements SkillRegistry, Disposable {
         }
     }
 
-    /**
-     * 解析 {@code findByCoordinate} 入参为 {@link SkillCoordinate}.
-     */
-    @NotNull
-    private static SkillCoordinate parseQuery(@NotNull String coordinate) {
-        String[] parts = coordinate.split(":");
-        if (parts.length == 2) {
-            return SkillCoordinate.of(parts[0], parts[1], null);
-        }
-        if (parts.length >= 3) {
-            return SkillCoordinate.of(parts[0], parts[1], parts[2]);
-        }
-        return SkillCoordinate.unknown();
-    }
-
-    private static boolean matches(@NotNull SkillCoordinate query, @NotNull SkillCoordinate target) {
-        if (query.getGroupId() != null && !query.getGroupId().equals(target.getGroupId())) {
-            return false;
-        }
-        if (query.getArtifactId() != null && !query.getArtifactId().equals(target.getArtifactId())) {
-            return false;
-        }
-        if (query.getVersion() != null && !query.getVersion().equals(target.getVersion())) {
-            return false;
-        }
-        return true;
-    }
 }

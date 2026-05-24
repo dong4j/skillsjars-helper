@@ -100,6 +100,56 @@ public final class SkillCoordinate {
     }
 
     /**
+     * 把 {@code findByCoordinate} 入参解析成查询坐标 (作为 {@link #matches(SkillCoordinate)} 的左侧).
+     *
+     * <p>规则:</p>
+     * <ul>
+     *   <li>{@code "g:a"} → 通配版本, 仅按 (groupId, artifactId) 匹配.</li>
+     *   <li>{@code "g:a:v"} (或更多段, 多余段忽略) → 精确匹配.</li>
+     *   <li>其他形式 (空 / 只有一段) → {@link #unknown()}, 与任何完整坐标都不匹配.</li>
+     * </ul>
+     *
+     * <p>该方法属于公共 API: 给第三方插件查询坐标时复用同一份解析规则, 避免各自实现产生不一致.</p>
+     *
+     * @param query 查询字符串
+     * @return 查询坐标
+     */
+    @NotNull
+    public static SkillCoordinate parseQuery(@NotNull String query) {
+        String[] parts = query.split(":");
+        if (parts.length == 2) {
+            return new SkillCoordinate(parts[0], parts[1], null);
+        }
+        if (parts.length >= 3) {
+            return new SkillCoordinate(parts[0], parts[1], parts[2]);
+        }
+        return unknown();
+    }
+
+    /**
+     * 判断本坐标 (查询侧) 是否匹配另一个目标坐标.
+     *
+     * <p>"查询侧" 即调用者从 {@link #parseQuery(String)} 拿到的坐标: 任一字段为 null
+     * 视为通配该段. 对称语义: {@code of("g","a",null).matches(of("g","a","1"))} 为 true,
+     * 但反过来不为 true. </p>
+     *
+     * @param target 目标坐标
+     * @return 匹配返回 true
+     */
+    public boolean matches(@NotNull SkillCoordinate target) {
+        if (this.groupId != null && !this.groupId.equals(target.groupId)) {
+            return false;
+        }
+        if (this.artifactId != null && !this.artifactId.equals(target.artifactId)) {
+            return false;
+        }
+        if (this.version != null && !this.version.equals(target.version)) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
      * 返回一个所有字段都为空的占位坐标, 用于无法识别坐标的来源 (例如本地 Jar).
      *
      * @return 占位坐标
