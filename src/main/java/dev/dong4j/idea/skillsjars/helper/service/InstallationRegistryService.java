@@ -18,6 +18,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 
@@ -71,14 +72,22 @@ public final class InstallationRegistryService implements Disposable {
     @NotNull
     private final List<SkillInstallationListener> listeners = new CopyOnWriteArrayList<>();
 
+    /**
+     * 是否已完成首次"订阅 SkillExportService + 触发后台初始扫描".
+     *
+     * <p>Light service 的构造器禁止 {@code getService(...)} 别的依赖服务
+     * (官方原文: "Other service dependencies must be acquired only when needed
+     * in all corresponding methods"), 因此把这两个动作延后到首次对外方法被调用时.</p>
+     */
+    @NotNull
+    private final AtomicBoolean subscribed = new AtomicBoolean(false);
+
+    /**
+     * Light service 构造器. <strong>不要</strong>在这里调用 {@code getService(...)}
+     * 或者做任何 IO; 重活全部放在 {@link #ensureSubscribed()} 里走 lazy 路径.
+     */
     public InstallationRegistryService(@NotNull Project project) {
         this.project = project;
-        // 自动订阅导出服务: 每次导出完成后重新扫描索引
-        SkillExportService exportService = SkillExportService.getInstance(project);
-        Disposable subscription = exportService.addInstallationListener(src -> this.refresh());
-        Disposer.register(this, subscription);
-        // 启动时延迟一次扫描, 避免阻塞构造
-        ApplicationManager.getApplication().executeOnPooledThread(this::refresh);
     }
 
     @NotNull
@@ -90,6 +99,7 @@ public final class InstallationRegistryService implements Disposable {
      * 重新扫描所有预设目录, 替换内存快照, 然后通知监听器.
      */
     public void refresh() {
+        this.ensureSubscribed();
         Map<String, List<InstalledLocation>> next = new HashMap<>();
         List<SkillTargetDirectory> targets = TargetDirectoryDetector.detect(this.project);
         for (SkillTargetDirectory target : targets) {
@@ -119,6 +129,7 @@ public final class InstallationRegistryService implements Disposable {
     @NotNull
     public List<InstalledLocation> findInstalledLocations(@NotNull String artifactCoord,
                                                          @NotNull String skillRoot) {
+        this.ensureSubscribed();
         String key = key(artifactCoord, skillRoot);
         List<InstalledLocation> list = this.snapshot.get().get(key);
         return list == null ? List.of() : List.copyOf(list);
@@ -129,6 +140,7 @@ public final class InstallationRegistryService implements Disposable {
      */
     @NotNull
     public Map<String, List<InstalledLocation>> snapshotByAgent() {
+        this.ensureSubscribed();
         return this.snapshot.get();
     }
 
@@ -137,6 +149,7 @@ public final class InstallationRegistryService implements Disposable {
      */
     @NotNull
     public Disposable addListener(@NotNull SkillInstallationListener listener) {
+        this.ensureSubscribed();
         this.listeners.add(listener);
         return () -> this.listeners.remove(listener);
     }
@@ -153,6 +166,22 @@ public final class InstallationRegistryService implements Disposable {
             }
         }
         return false;
+    }
+
+    /**
+     * 一次性把"订阅 SkillExportService + 触发后台初始扫描"做完.
+     *
+     * <p>从构造器挪到 lazy init 的原因是 light service 约束: 构造器不允许
+     * {@code getService(...)} 别的服务; 同时也避免 service 初始化期间的循环引用风险.</p>
+     */
+    private void ensureSubscribed() {
+        if (!this.subscribed.compareAndSet(false, true)) {
+            return;
+        }
+        SkillExportService exportService = SkillExportService.getInstance(this.project);
+        Disposable subscription = exportService.addInstallationListener(src -> this.refresh());
+        Disposer.register(this, subscription);
+        ApplicationManager.getApplication().executeOnPooledThread(this::refresh);
     }
 
     @Override

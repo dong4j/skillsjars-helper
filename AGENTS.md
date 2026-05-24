@@ -76,6 +76,7 @@ skillsjars-helper/
 | 加新的 Agent 目标目录（第 10 个 agent）                     | `api/model/SkillTargetDirectory`（枚举）+ `icons/SkillsJarsHelperIcons` + `resources/icons/agents/*.png` + 国际化键       | 必须同时提供 1x 和 @2x 图标；ResourceBundle 中英两份都要补                                                                        |
 | 改 ToolWindow 树 / 渲染 / 右键菜单                       | `toolwindow/SkillsToolWindowPanel.java` + `SkillsTreeModel` + `SkillsTreeCellRenderer` + `SkillExportInteraction` | 渲染层禁止直接读 JAR / 写盘 —— 一律走 `SkillRegistry` / `SkillExportService`                                                  |
 | 暴露给第三方插件的能力                                      | `api/` 包（Listener / Service 接口 / model）                                                                           | 这是**公共契约**，破坏性改动需要在 `pluginChanges.html` 显式注明                                                                    |
+| 新增 IntelliJ Platform service（projectService / applicationService） | 先读 [`.claude/skills/add-project-service`](.claude/skills/add-project-service/SKILL.md)                            | **官方决策路径**：有独立接口、对外暴露 → `plugin.xml` + `serviceInterface` + `serviceImplementation`；无接口、内部使用 → `@Service(Service.Level.PROJECT)` light service。详见 §8 第 7 条 |
 | 国际化文案                                            | `resources/messages/SkillsJarsHelperBundle*.properties` + `util/SkillsJarsHelperBundle.java`                      | 中英两份必须同时增删，键名同步                                                                                                  |
 | 通知 / Balloon                                     | `util/NotificationUtil.java` + `plugin.xml` 中 `notificationGroup="SkillsJars Helper Notifications"`               | 不要在业务层 `new Notification(...)`                                                                                   |
 | 修市场页文案 / 链接                                      | `includes/pluginDescription.html` + `pluginChanges.html`                                                          | 见 §8「已知陷阱」中的实体渲染问题                                                                                               |
@@ -168,28 +169,35 @@ skillsjars-helper/
 
 ## 8. 已知陷阱（**踩过坑，不要再踩**）
 
-1. **`includes/*.html` 不要用 HTML 命名实体**
-    - `pluginDescription` / `pluginChanges` 通过 `pluginConfiguration.description = providers.fileContents(...)` 注入到生成的 `plugin.xml` 的
-      `<description>` 中，会被双重转义，`&mdash;` / `&lt;` / `&gt;` 在 IDE 渲染时会丢字符变成 "mdash;" / "lt;...gt;"。
-    - **修复约定**：em-dash 用 Unicode `—`（U+2014）；`<code>` 内的尖括号用全角 `＜` `＞`（U+FF1C / U+FF1E）或改写措辞，**不要**用 `&lt;` `&gt;`。
-2. **`gradle.properties` 的 `pluginVersion` 是初始版本号 `2026.1.1000`**
-    - 这是首发版本，**没有** `2026.1.2000`。下一次正式发布按 SemVer-like 规则递增即可。
-3. **Maven 依赖是可选的**
+1. **Maven 依赖是可选的**
     - `plugin.xml` 用 `<depends optional="true" config-file="skillsjars-maven.xml">org.jetbrains.idea.maven</depends>`。
       `MavenPluginDependencyScanner` 注册在 `skillsjars-maven.xml`，**禁止**把它移到主 `plugin.xml`，否则没装 Maven 插件的 IDE 会启动失败。
-4. **`InstallationRegistryService` 状态来自磁盘扫描，不是事件累计**
+2. **`InstallationRegistryService` 状态来自磁盘扫描，不是事件累计**
     - 启动时 + 每次导出后会重扫 9 个预设目录的 `.skillsjars-helper.json`。改导出逻辑后必须验证：删除磁盘上的 manifest 应能让徽标消失；手工修改
       SKILL.md 应能让状态变 `LOCALLY_MODIFIED`。
-5. **`InstallationStatus` 6 个枚举值是契约**
+3. **`InstallationStatus` 6 个枚举值是契约**
     - `NEW / UP_TO_DATE / OUTDATED / LOCALLY_MODIFIED / FOREIGN / DUPLICATE_NAME` 与用户交互（静默 / yes-no / 三选项）一一对应。新增状态必须同时改
       `ExportPlanner` + `SkillExportInteraction` + `pluginChanges.html`。
-6. **图标必须提供 @2x**
+4. **图标必须提供 @2x**
     - `icons/agents/<agent>.png` + `<agent>@2x.png` 两份。新增 Agent 时一份都不能少，否则 HiDPI 屏会模糊。
-7. **Agent Skills 目录名取自 frontmatter 的 `name`**
+5. **Agent Skills 目录名取自 frontmatter 的 `name`**
     - 不再用 `skillsjars__org__repo__` 扁平前缀；与 `skillsjars-maven-plugin` v0.0.7 起的 `useSkillsNameAsDirectory=true`
       对齐。改导出命名前先确认这条约定还没失效。
-8. **不要静默修改用户构建文件**
+6. **不要静默修改用户构建文件**
     - 任何写 `pom.xml` / `build.gradle(.kts)` 的能力（三期未实现）必须先弹 diff 让用户确认。
+7. **新增 service 按官方决策路径二选一**（**完整规则见
+   [`.claude/skills/add-project-service/SKILL.md`](.claude/skills/add-project-service/SKILL.md)**）
+    - **有独立接口、对外暴露 API** → `plugin.xml` 的 `<projectService serviceInterface= serviceImplementation=>`。
+      本项目的 `SkillRegistry` / `SkillExportService` 都是这条路径，第三方插件通过 `project.getService(<接口>.class)`
+      按接口查找；light service 只支持按实现类查找，跟这种契约不兼容。
+    - **无独立接口、仅本插件内部使用** → `@Service(Service.Level.PROJECT)` light service，
+      **不要**再在 `plugin.xml` 注册。本项目的 `InstallationRegistryService` 是这条路径的范本。
+    - 两种方式**互斥**：接口上更**不允许**标 `@Service`（IDEA 报 "Light service must be final" / "轻服务必须为具体类"）；
+      实现类同时有 `@Service` + plugin.xml 注册也会报 "@Service 注解的服务类不得在 plugin.xml 中注册"。
+    - 看到 IDE inspection **"服务可被转换为轻服务" / "A service can be converted to a light one"**，
+      就是 IDEA 在告诉你这个 service 应该走第 2 条 light service 路径，**不要忽略**。
+    - Light service 构造器**禁止** `getService(...)` 别的依赖 service（即使不存字段也是反模式）；
+      用 lazy init + `AtomicBoolean` 守门，参考 `InstallationRegistryService.ensureSubscribed()`。
 
 ---
 
@@ -230,5 +238,5 @@ skillsjars-helper/
 - 项目对外介绍：[`README.md`](README.md)
 - 插件市场页源文：[`includes/pluginDescription.html`](includes/pluginDescription.html)
 - 变更日志源文：[`includes/pluginChanges.html`](includes/pluginChanges.html)
--
-上游生态：[SkillsJars](https://www.skillsjars.com/) · [作者其他插件](https://plugins.jetbrains.com/vendor/9afaba35-91ea-4364-8ced-64db868dd23e)
+- 上游生态：[SkillsJars](https://www.skillsjars.com/)
+- [作者其他插件](https://plugins.jetbrains.com/vendor/9afaba35-91ea-4364-8ced-64db868dd23e)

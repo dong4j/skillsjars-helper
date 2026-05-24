@@ -1,245 +1,245 @@
+<div align="center">
+
 # SkillsJars Helper
 
-SkillsJars Helper 是一个面向 JetBrains IDE 的 Agent Skill 依赖管理插件。它让 Java 项目中通过 SkillsJars 分发的 `SKILL.md` 可以在 IDEA
-内被发现、预览、检查、导出和复用。
+![banner.png](./banner.png)
 
-这个项目的核心判断是：SkillsJars 已经解决了“如何把 Agent Skill 打进 Jar 并通过 Maven/Gradle 分发”的问题，但开发者在 IDE 里仍然缺少一个可视化入口来回答这些问题：
+**Manage Agent Skills like any other Maven dependency, right inside your JetBrains IDE.**
+**像管理 Maven 依赖一样, 在 JetBrains IDE 内管理 Agent Skills.**
 
-- 当前项目 classpath 里到底有哪些 Skill？
-- 它们来自哪个 Maven/Gradle 依赖或插件依赖？
-- `skillsjars.com` 上有哪些已经发布的 SkillsJar，可以直接安装到当前项目？
-- 每个 Skill 的 `name`、`description`、`allowed-tools`、来源 Jar 和内部路径是什么？
-- 能否一键导出到 Claude Code、Codex、Junie、Cursor、Gemini、Qoder、Trae、CodeBuddy 等 Agent 的 Skill 目录？
-- 当前项目里的 `skills/` 能否一键校验、打包并发布成 SkillsJar？
-- 导出后是否有冲突、更新、覆盖或本地修改？
+[![JetBrains Marketplace](https://img.shields.io/badge/JetBrains%20Marketplace-SkillsJars%20Helper-blue?logo=jetbrains)](https://plugins.jetbrains.com/vendor/9afaba35-91ea-4364-8ced-64db868dd23e)
+[![Platform](https://img.shields.io/badge/IDEA-2024.2%20--%202025.3-orange)](#兼容性)
+[![Java](https://img.shields.io/badge/Java-21-red?logo=openjdk)](#从源码构建)
+[![License](https://img.shields.io/badge/License-MIT-green)](#开源协议)
 
-## 产品定位
+[GitHub](https://github.com/dong4j/skillsjars-helper) ·
+[SkillsJars](https://www.skillsjars.com/) ·
+[作者其他插件](https://plugins.jetbrains.com/vendor/9afaba35-91ea-4364-8ced-64db868dd23e)
 
-SkillsJars Helper 不是另一个解压工具，而是：
+</div>
 
-> Java 项目的 AI 上下文依赖管理器。
+---
 
-它把 Agent Skill 当成一种可管理的工程依赖，让它像普通 Jar 一样被 IDE 识别、索引和展示，同时保留向不同 Agent 工具导出的能力。
+## 介绍
 
-## 核心能力
+**SkillsJars Helper** 是一款面向 JetBrains 系 IDE 的插件, 让以 Maven artifact 形式分发的 **Agent Skills**
+（即 [SkillsJars](https://www.skillsjars.com/)）在 IDE 中成为一等公民.
 
-### Skill 发现
+[Agent Skills](https://docs.claude.com/en/docs/agents-and-tools/agent-skills/overview) 是现代 Coding Agent (Claude Code, Codex, Junie,
+Cursor, Gemini, Qoder, Trae, CodeBuddy 等) 复用行为的标准载体 —— 一个目录, 包含 `SKILL.md` 和可选的脚本 / 资源. **SkillsJars** 通过 Maven /
+Gradle 仓库分发这些 skill, 让团队像管理普通依赖一样版本化和共享.
 
-插件会扫描当前项目可见的 Skill 来源：
+但 IDE 侧一直缺少配套体验:
 
-- Maven 普通依赖
-- Maven plugin dependencies
-- Gradle dependencies
-- IDEA External Libraries
-- 当前 module output
-- 用户手动选择的本地 Jar
+- 不知道 classpath 上到底有哪些 skill, 来自哪个 artifact.
+- 想看 `SKILL.md` 还要手动解压 JAR.
+- 想把 skill 装到 `.claude/skills`、`.codex/skills` 等本地目录时, 还得自己拷贝、重命名、查重.
+- 升级、本地修改、同名冲突没有可靠提示.
 
-识别规则优先覆盖 SkillsJars 约定路径：
+**SkillsJars Helper 补上这块空白**: 不解压、不离开 IDE, 即可发现、预览和分发这些 skill.
 
-```text
-META-INF/skills/**/SKILL.md
-META-INF/resources/skills/**/SKILL.md
+## 主要能力
+
+- **依赖扫描**: 自动扫描 Maven 普通依赖与 `skillsjars-maven-plugin` 的 `<dependencies>`, 识别 JAR 内的 `META-INF/skills/**/SKILL.md` 与
+  `META-INF/resources/skills/**/SKILL.md`.
+- **Agent Skills 工具窗**: 按 artifact 分组的树形列表, 下方独立描述面板; 支持 SpeedSearch / Tooltip / 双击或 `Enter` 打开 `SKILL.md` / 右键
+  Copy Name / Copy Coordinate / Open Source Jar.
+- **一键导出到 9 个 Agent 目录**: `.claude/skills`, `.codex/skills`, `.junie/skills`, `.agents/skills`, `.cursor/skills`, `.gemini/skills`,
+  `.qoder/skills`, `.trae/skills`, `.codebuddy/skills`, 或自定义目录.
+- **导出 Manifest**: 每个导出目录写入 `.skillsjars-helper.json`, 记录来源 artifact 与每个文件的 `sha256`, 自动判断**升级 / 本地修改 / 同名冲突
+  **, 不需要重型索引.
+- **安装状态徽标**: skill 叶子节点右对齐显示已安装到的 Agent 品牌图标, 鼠标悬浮即可看到具体 agent id.
+- **开放扩展点**: 三方插件实现 `SkillSourceScanner` 即可接入 Gradle / SBT 或自有构建系统, 无需修改本插件协调层.
+
+## 安装
+
+### 方式一: JetBrains Marketplace（推荐）
+
+1. 打开 IntelliJ IDEA / 其他 JetBrains IDE.
+2. `Settings` → `Plugins` → `Marketplace`, 搜索 **SkillsJars Helper**.
+3. 点击 `Install`, 重启 IDE.
+
+### 方式二: 从 GitHub Release 下载
+
+1. 在 [Releases](https://github.com/dong4j/skillsjars-helper/releases) 页面下载 `skillsjars-helper-<version>.zip`.
+2. `Settings` → `Plugins` → 齿轮图标 → `Install Plugin from Disk...`, 选中下载的 zip.
+
+## 使用
+
+### 1. 给项目添加 SkillsJar
+
+像普通 Maven 依赖一样添加:
+
+```xml
+<dependency>
+    <groupId>com.example</groupId>
+    <artifactId>your-skillsjar</artifactId>
+    <version>1.0.0</version>
+</dependency>
 ```
 
-其中 Maven plugin dependencies 是第一版必须关注的来源，因为 SkillsJars 官方用法经常把 SkillsJar 配在 `skillsjars-maven-plugin` 的
-`<dependencies>` 下，而不是普通项目依赖中。
+或者放在 `skillsjars-maven-plugin` 的 `<dependencies>` 下（按 SkillsJars 推荐用法）:
 
-### SkillsJar 市场搜索与安装
+```xml
+<plugin>
+    <groupId>com.skillsjars</groupId>
+    <artifactId>skillsjars-maven-plugin</artifactId>
+    <version>...</version>
+    <dependencies>
+        <dependency>
+            <groupId>com.example</groupId>
+            <artifactId>your-skillsjar</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+    </dependencies>
+</plugin>
+```
 
-插件会接入 `https://www.skillsjars.com` 上已发布的 SkillsJar 列表，支持按名称、描述、Artifact、版本和安全扫描状态搜索。
+### 2. 打开 Agent Skills 工具窗
 
-搜索结果需要提供三类依赖写法：
+在 IDE 右侧工具栏点击 **Agent Skills**, 即可看到按 artifact 分组的 skill 列表.
 
-- Maven
-- Gradle
-- sbt
+- **双击** skill / 按 `Enter`：直接打开 JAR 内的 `SKILL.md`, 无需解压.
+- **右键 skill**: Copy Name / Copy Coordinate / Open Source Jar.
 
-插件应根据当前项目类型默认展示最合适的依赖片段：
+### 3. 导出 skill 到 Agent 目录
 
-- Maven 项目展示 `<dependency>` 或 `skillsjars-maven-plugin` 的 `<dependencies>` 写法。
-- Gradle 项目展示 `runtimeOnly("group:artifact:version")` 写法。
-- sbt 项目展示 `"group" % "artifact" % "version"` 写法。
+- **右键 skill** → `Extract to ▸ <Agent>`：导出到指定 Agent 的本地目录.
+- **右键 artifact** → `Extract all skills to ▸ <Agent>`：批量导出整个 JAR 内的 skill.
 
-每个搜索结果至少提供两个动作：
+导出后, skill 叶子节点右侧会出现对应 Agent 的品牌徽标; 重启 IDE 后徽标仍会保留, 因为状态从磁盘 `.skillsjars-helper.json` 重扫得到.
 
-- Copy Dependency：复制当前项目类型对应的依赖片段。
-- Install Dependency：把依赖写入当前项目构建文件，并触发 IDE 重新导入。
+后续再次导出同一个 skill 时, 插件会根据本地状态自动选择行为:
 
-安装动作必须先展示 diff 或变更预览，避免静默修改 `pom.xml`、`build.gradle(.kts)` 或 `build.sbt`。
+| 状态               | 行为                     |
+|------------------|------------------------|
+| 已是最新             | 静默跳过, Notification 提示  |
+| 有新版本             | 直接写入, Notification 提示  |
+| 本地已修改过           | 弹出二次确认（yes/no）         |
+| 目录已存在但无 manifest | 弹出二次确认（yes/no）         |
+| 同名但来自不同 artifact | 三选项: 覆盖原有 / 改用后缀名 / 取消 |
 
-### Tool Window 展示
+## 兼容性
 
-插件提供 `Agent Skills` Tool Window，用列表或分组树展示 Skill。
+| 维度               | 范围                                                                      |
+|------------------|-------------------------------------------------------------------------|
+| **JetBrains 平台** | IntelliJ IDEA Community / Ultimate **2024.2 – 2025.3**                  |
+| **构建工具**         | Maven 普通依赖 + `skillsjars-maven-plugin` 的 `<dependencies>`; Gradle 支持在路上 |
+| **运行环境**         | 与 IDE 自带 JBR 一致（Java 21 编译, 21 运行）                                      |
 
-每个 Skill 条目至少包含：
+> 其他基于 IntelliJ Platform 的 IDE (PyCharm, GoLand, WebStorm 等) 在兼容平台版本范围内通常可用, 但官方仅以 IntelliJ IDEA 为测试基线.
 
-- Skill 名称
-- 描述
-- 来源类型
-- Maven/Gradle 坐标
-- 来源 Jar
-- Jar 内部路径
-- `allowed-tools`
-- 风险等级
-- 是否已导出
+## 扩展
 
-### Skill 预览与检查
+`SkillsJars Helper` 的公共契约都在 `dev.dong4j.idea.skillsjars.helper.api` 包内, 三方插件可以直接使用.
 
-插件支持直接从 Jar 中预览 `SKILL.md`，不要求先导出到文件系统。
+### 查询当前项目的 skill
 
-后续会增加基础检查能力：
+```java
+SkillRegistry registry = project.getService(SkillRegistry.class);
+List<SkillJarArtifact> artifacts = registry.getArtifacts();
+registry.addListener(snapshot -> {
+    // 扫描结果更新时回调
+});
+```
 
-- frontmatter 是否完整
-- `name` 是否重复
-- `description` 是否为空或过短
-- `allowed-tools` 是否包含高风险权限
-- Markdown 引用的文件是否存在
-- Skill 目录资源是否完整
+### 编程式导出 skill
 
-### Skill 导出
+```java
+SkillExportService exporter = project.getService(SkillExportService.class);
+ExportPlan plan = exporter.planExport(descriptor, target);
+ExportResult result = exporter.execute(plan);
+```
 
-插件支持将 Jar 内的 `SKILL.md` 及其相关文件导出到指定 Agent Skill 目录。
+### 接入新的 skill 来源（Gradle / SBT / 自有构建系统）
 
-候选目录可以自动检测，但写入前必须由用户确认：
+实现 `SkillSourceScanner` 并通过 `plugin.xml` 注册即可:
 
-- `.claude/skills`
-- `.codex/skills`
-- `.junie/skills`
-- `.agents/skills`
-- `.cursor/skills`
-- `.gemini/skills`
-- `.qoder/skills`
-- `.trae/skills`
-- `.codebuddy/skills`
-- 自定义目录
+```xml
+<idea-plugin>
+    <depends>dev.dong4j.idea.skillsjars.helper</depends>
 
-导出时会生成 manifest，用来追踪来源 Jar、Artifact、版本、目标路径和文件哈希，方便后续判断是否需要更新、清理或提示冲突。
+    <extensions defaultExtensionNs="dev.dong4j.idea.skillsjars.helper">
+        <skillSourceScanner
+            implementation="com.example.MyGradleScanner"/>
+    </extensions>
+</idea-plugin>
+```
 
-### Skill 生成
+`SkillSourceScanner` 的实现负责给出 `SkillJarSource` 流, 解析、合并、对外暴露的工作仍然由本插件协调层完成 —— 你只需要关心"在我的构建系统里, 哪些
+JAR 可能含 skill".
 
-插件可以为当前选中的 Java 模块生成 `SKILL.md` 初始模板，方便后续通过 SkillsJars 打包。
+> 完整 API 与扩展点契约见源码 `src/main/java/dev/dong4j/idea/skillsjars/helper/api/` 与 [`docs/design.md`](docs/design.md).
 
-生成能力分为两层：
+## 从源码构建
 
-- 基础生成：根据模块名、包结构、README、源码入口等信息生成模板。
-- AI 增强：可选集成 IntelliAI Engine 插件，根据项目上下文生成更完整的触发规则、使用边界和说明。
+### 环境要求
 
-AI 能力不是插件强依赖。没有 IntelliAI Engine 时，插件仍应保留基础模板生成能力。
+- JDK **21+**
+- 任意支持 Gradle 的 IDE（推荐 IntelliJ IDEA）
 
-### SkillsJar 发布
+### 构建命令
 
-插件提供一键发布入口，用于把当前项目中的 `skills/` 目录校验、打包并发布成 SkillsJar。
+```bash
+git clone https://github.com/dong4j/skillsjars-helper.git
+cd skillsjars-helper
 
-发布前必须完成规范检查：
+./gradlew runIde         # 在内嵌沙箱 IDE 中调试本插件
+./gradlew test           # 跑单元测试
+./gradlew buildPlugin    # 产出 build/distributions/skillsjars-helper-<version>.zip
+./gradlew verifyPlugin   # IntelliJ Platform 跨版本兼容性校验
+```
 
-- 每个 Skill 子目录必须包含 `SKILL.md`。
-- `SKILL.md` 必须符合 Agent Skills 规范。
-- frontmatter 必须包含 `name` 和 `description`。
-- `allowed-tools` 和 `license` 需要按 SkillsJars 约定处理。
-- 关联文件必须存在，不能引用缺失资源。
+构建产物位于 `build/distributions/`, 可直接用于"从磁盘安装插件".
 
-官网当前提供 `Publish a SkillsJar` 表单，并以 GitHub Org / GitHub Repo 作为入口。SkillsJars Helper 不应把“项目必须在 GitHub
-上”作为唯一发布路径；插件应同时支持：
+## 贡献
 
-- GitHub 发布：兼容官网表单，适合公开 GitHub 仓库。
-- 本地发布准备：对非 GitHub 项目执行校验、打包、生成 POM/发布配置，并交给用户配置的 Maven Central 或私服发布链路。
+欢迎贡献 issue 与 PR. 在动手之前请快速过一下:
 
-第一版可以先做到发布前检查和打包配置生成，真正上传动作需要用户确认凭据、目标仓库和版本。
+1. **先看 [`AGENTS.md`](AGENTS.md)**：项目地图、包职责、扩展点与已知陷阱都在那里, 能帮你 5 分钟内定位到要改的位置.
+2. **完整设计参考 [`docs/design.md`](docs/design.md)**：一/二期完整架构与决策记录.
+3. **三期规划见 [`docs/phase3-publish.md`](docs/phase3-publish.md)**：发布前检查 / 打包配置生成 / 发布向导.
 
-### 扩展接口
+### 开发规范
 
-插件会提供标准 IDEA Plugin 扩展接口，让其他插件复用 Skill 检索能力。
+- **代码风格**: Java 21, 允许 `record` / pattern matching; Lombok 仅限 `@Getter / @Builder / @RequiredArgsConstructor / @Slf4j`, 不用
+  `@Data`.
+- **注释**: 公共类与方法补 Javadoc, 重点解释"为什么"和"关键约束", 而不是重复代码本身.
+- **国际化**: 面向用户的字符串走 `SkillsJarsHelperBundle.message("...")`, 中英 (`*.properties` 与 `*_zh_CN.properties`) 两份都要补.
+- **公共 API 兼容**: 修改 `api/` 包下的接口和 model 需要在 [`includes/pluginChanges.html`](includes/pluginChanges.html) 写一行变更说明.
+- **测试**: 新功能尽量补单元测试; 改了 `sinceBuild` 或平台 API 必须本地跑一次 `./gradlew verifyPlugin`.
 
-预期能力包括：
+### 提交流程
 
-- 查询当前项目可用 Skill
-- 按名称、来源 Jar、Artifact 查找 Skill
-- 获取 `SKILL.md` 内容和相关资源
-- 监听扫描结果变化
-- 复用导出与安装状态判断逻辑
+1. Fork 本仓库, 在自己的分支上开发.
+2. 提交前确认 `./gradlew test` 通过.
+3. PR 中描述清楚: **为什么需要这个改动** / **怎么验证**. UI 相关改动建议附截图.
+4. PR 标题建议带前缀: `feat:` / `fix:` / `refactor:` / `docs:` / `test:` / `chore:`.
 
-扩展接口应返回结构化模型，避免把 UI 或文件系统细节直接暴露给调用方。
+### 报告问题
 
-## MVP 范围
+在 [GitHub Issues](https://github.com/dong4j/skillsjars-helper/issues) 提交时请附上:
 
-第一版优先做小而完整的闭环：
+- IDE 版本（`Help` → `About`）
+- 插件版本
+- 复现步骤
+- 必要时附 `Help` → `Show Log in Finder/Explorer` 中的相关日志片段
 
-1. 扫描 Maven 普通依赖 Jar。
-2. 扫描 Maven plugin dependencies 中的 SkillsJar。
-3. 识别 `META-INF/skills/**/SKILL.md`。
-4. 解析 `name`、`description`、`allowed-tools`、`license`。
-5. Tool Window 列表展示。
-6. 双击预览 `SKILL.md`。
-7. 右键导出到 `.claude/skills`、`.codex/skills`、`.junie/skills`、`.agents/skills`、`.cursor/skills`、`.gemini/skills`、`.qoder/skills`、`.trae/skills`、`.codebuddy/skills` 或自定义目录。
-8. 导出时生成 manifest。
-9. 提供 Refresh 按钮。
-10. 提供 SkillsJars.com 搜索、复制依赖、按项目类型安装依赖。
-11. 提供 SkillsJar 发布前检查和打包配置生成。
+## 路线图
 
-第二阶段再扩展：
+当前已发布版本提供完整的**发现 → 预览 → 导出**闭环. 后续规划:
 
-- Gradle 支持
-- 冲突检测
-- `allowed-tools` 风险评分
-- `SKILL.md` Inspection / Quick Fix
-- Agent 目录自动检测配置页
-- Maven/Gradle extract Run Configuration
-- IntelliAI Engine 集成
-- 非 GitHub 项目的完整发布执行链路
-- sbt 项目的自动写入与刷新
+- **Gradle 依赖扫描**：通过同一 `SkillSourceScanner` 扩展点接入, 复用现有协调层与 UI.
+- **SkillsJar 发布前检查与打包**：校验本地 `skills/` 目录, 生成发布配置, 详见 [`docs/phase3-publish.md`](docs/phase3-publish.md).
+- **`allowed-tools` 风险标识**：在工具窗中标注高敏感权限, 仅提示不阻断.
+- **SkillsJars.com 市场搜索与一键安装**：在 IDE 内搜索已发布的 SkillsJar 并按项目类型生成依赖片段.
 
-## 非目标
+## 开源协议
 
-- 不替代 SkillsJars Maven/Gradle 插件的打包能力。
-- 不默认修改用户全局 Agent 目录。
-- 不静默修改构建文件，安装依赖前必须展示变更。
-- 不强制绑定某一个 Agent 工具。
-- 不把 AI 生成功能作为扫描、预览、导出的前置依赖。
-- 不把 GitHub 仓库作为发布 SkillsJar 的唯一前提。
-- 不在第一版实现完整的企业安全审计。
+本项目基于 [MIT License](LICENSE) 开源 —— Copyright © 2026 [dong4j](https://github.com/dong4j).
 
-## 文档
+## 相关链接
 
-- [设计文档](docs/design.md)
-
-## 开发状态
-
-| 阶段 | 范围 | 状态 |
-|---|---|---|
-| 一期 · 解析链路 | Maven 普通依赖 + Maven plugin dependencies 扫描 → SKILL.md 解析 → ToolWindow 列表展示 | 已完成 |
-| 二期 · 导出 | Skill 导出到 9 个 Agent 目录、manifest 写入、6 状态冲突机 (含 DUPLICATE_NAME) | 已完成 |
-| 三期 · 发布 | SkillsJars 发布前检查 + 打包配置生成 + 本地打包验证 + 发布向导，详见 [需求草案](docs/phase3-publish.md) | 计划中 |
-| 三期 · Gradle 解析 | Gradle dependencies 扫描；通过同一 `SkillSourceScanner` 扩展点接入 | 计划中 |
-| 三期 · 风险检查 | `allowed-tools` 关键字识别 → ToolWindow Risk 列展示，不阻断发布 | 计划中 |
-
-一期把扩展接口 `SkillRegistry` 和扫描器扩展点 `dev.dong4j.idea.skillsjars.helper.skillSourceScanner` 一次性预留；
-二期再加一个对称的导出 API `SkillExportService` 和一个安装索引服务 `InstallationRegistry`，
-未来 Gradle 扫描器和第三方查询/导出插件可以直接复用这套接口，不需要改动协调层。
-
-### 一期验证方式
-
-1. 运行 `./gradlew runIde` 启动一个内嵌 IDEA。
-2. 在内嵌 IDE 中打开任意 Maven 项目（`pom.xml` 中包含 SkillsJar 依赖即可）。
-3. 在右侧打开 `Agent Skills` Tool Window：
-   - 上半区是按 artifact 折叠的树形列表，叶子节点是命中
-     `META-INF/skills/**/SKILL.md` 或 `META-INF/resources/skills/**/SKILL.md` 的 skill。
-   - 下半区是描述面板，选中 skill 后展示其 `description` 全文（可拖动分割条调整高度）。
-   - 双击叶子或回车直接打开 jar 内 SKILL.md；右键菜单可复制 skill 名 / 坐标 / 打开源 jar。
-   - 工具栏只保留 `Refresh / Expand All / Collapse All`；底部状态栏展示全局汇总。
-
-### 二期验证方式
-
-1. 在内嵌 IDE 中右键 skill 叶子节点，选 `Extract to ▸`，应能看到 9 个预设 Agent 目录 + Custom Directory。
-2. 选 `.claude/skills` 第一次导出 → 看到 Notification "已安装 skill ..."，
-   skill 节点的最右侧（与 skill name 同行，右对齐）出现 Claude 品牌图标作为安装徽标。
-   多次安装到不同 Agent 时，徽标会在 cell 右侧横排追加，节点名仍占左侧不被挤压。
-3. 同一个 skill 再选同一个 Agent → Notification "已是最新"（UP_TO_DATE）。
-4. 修改一下 `.claude/skills/<name>/SKILL.md` 再导出 → 弹 yes/no 确认 (LOCALLY_MODIFIED)。
-5. 手工 `mkdir .claude/skills/foo` 但不放 manifest，再导出一个 frontmatter `name: foo` 的 skill →
-   弹 yes/no 确认 (FOREIGN)。
-6. 在两个不同 jar 内同时存在 `name: foo` 的 skill，先导出第一个，再导出第二个 →
-   弹三选项弹窗 (DUPLICATE_NAME)：覆盖原有 / 改用 `foo__<artifactId>` / 取消。
-7. 右键 artifact 节点选 `Extract all skills to ▸ <Agent>` 批量导出整个 jar 的 skill。
-8. 再次重启 IDE → 安装徽标依然显示，因为 `InstallationRegistryService` 会在启动时重扫所有预设目录的 manifest。
-
-详细设计见 `docs/design.md`。
+- **SkillsJars 官网**: <https://www.skillsjars.com/>
+- **Agent Skills 规范**: <https://docs.claude.com/en/docs/agents-and-tools/agent-skills/overview>
+- **作者其他 JetBrains 插件**: <https://plugins.jetbrains.com/vendor/9afaba35-91ea-4364-8ced-64db868dd23e>

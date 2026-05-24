@@ -2,7 +2,6 @@ package dev.dong4j.idea.skillsjars.helper.service;
 
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.components.Service;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.LocalFileSystem;
@@ -36,7 +35,6 @@ import dev.dong4j.idea.skillsjars.helper.export.TargetDirectoryDetector;
  * @version 1.0.0
  * @since 1.0.0
  */
-@Service(Service.Level.PROJECT)
 public final class SkillExportServiceImpl implements SkillExportService, Disposable {
 
     private static final Logger LOG = Logger.getInstance(SkillExportServiceImpl.class);

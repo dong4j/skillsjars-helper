@@ -49,9 +49,8 @@
             serviceInterface="dev.dong4j.idea.skillsjars.helper.api.SkillExportService"
             serviceImplementation="dev.dong4j.idea.skillsjars.helper.service.SkillExportServiceImpl"/>
 
-        <!-- 项目级 InstallationRegistry 服务: 维护所有预设 Agent 目录的安装状态索引. -->
-        <projectService
-            serviceImplementation="dev.dong4j.idea.skillsjars.helper.service.InstallationRegistryService"/>
+        <!-- InstallationRegistryService 是无独立接口的内部 service, 已通过 @Service(Service.Level.PROJECT)
+             声明为 light service, 不在 plugin.xml 注册 (见 IntelliJ Platform 官方推荐). -->
 
         <!-- Agent Skills Tool Window. anchor=right 与依赖类工具更接近. -->
         <toolWindow

@@ -2,7 +2,6 @@ package dev.dong4j.idea.skillsjars.helper.service;
 
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.components.Service;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.progress.ProcessCanceledException;
 import com.intellij.openapi.progress.ProgressIndicator;
@@ -53,7 +52,6 @@ import dev.dong4j.idea.skillsjars.helper.util.SkillsJarsHelperBundle;
  * @version 1.0.0
  * @since 1.0.0
  */
-@Service(Service.Level.PROJECT)
 public final class SkillRegistryService implements SkillRegistry, Disposable {
 
     private static final Logger LOG = Logger.getInstance(SkillRegistryService.class);

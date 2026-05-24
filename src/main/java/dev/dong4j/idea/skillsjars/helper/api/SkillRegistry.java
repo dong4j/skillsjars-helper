@@ -43,7 +43,8 @@ public interface SkillRegistry {
     /**
      * 获取项目级实例.
      *
-     * <p>底层是 IDEA 的 {@code @Service(Service.Level.PROJECT)}, 调用方无需自己缓存.</p>
+     * <p>底层是 IDEA 的项目级 service (在 plugin.xml 中以 {@code serviceInterface=} +
+     * {@code serviceImplementation=} 形式注册), 调用方无需自己缓存.</p>
      *
      * @param project 当前项目
      * @return 注册表实例

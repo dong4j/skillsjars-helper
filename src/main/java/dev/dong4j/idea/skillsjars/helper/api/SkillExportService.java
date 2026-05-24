@@ -1,7 +1,6 @@
 package dev.dong4j.idea.skillsjars.helper.api;
 
 import com.intellij.openapi.Disposable;
-import com.intellij.openapi.components.Service;
 import com.intellij.openapi.project.Project;
 
 import org.jetbrains.annotations.NotNull;
@@ -36,7 +35,6 @@ import dev.dong4j.idea.skillsjars.helper.api.model.SkillTargetDirectory;
  * @version 1.0.0
  * @since 1.0.0
  */
-@Service(Service.Level.PROJECT)
 public interface SkillExportService {
 
     /**
