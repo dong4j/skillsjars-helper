@@ -2,7 +2,6 @@ package dev.dong4j.idea.skillsjars.helper.toolwindow;
 
 import com.intellij.icons.AllIcons;
 import com.intellij.ui.ColoredTreeCellRenderer;
-import com.intellij.ui.RowIcon;
 import com.intellij.ui.SimpleTextAttributes;
 import com.intellij.ui.components.JBPanel;
 import com.intellij.util.ui.JBUI;
@@ -19,6 +18,7 @@ import javax.swing.tree.TreeCellRenderer;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Graphics;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -40,10 +40,14 @@ import icons.SkillsJarsHelperIcons;
  * <ul>
  *   <li>Artifact 节点: 主标签为 {@code artifactId:version}, 灰色后缀显示来源类型 (Maven / Maven Plugin
  *       等), 图标用 IDEA 内置的 {@code AllIcons.Nodes.PpLib}; 右侧不显示徽标.</li>
- *   <li>Skill 节点: 只显示 skill 名 (左侧 skill 主图标), 紧跟在 skill name 末尾用 {@link RowIcon}
- *       横排显示已安装到的每个 Agent 品牌图标 (与 IDEA Project View VCS 标记 / Maven Tool Window
- *       conflict 标记的设计语言一致).</li>
+ *   <li>Skill 节点: 只显示 skill 名 (左侧 skill 主图标), 紧跟在 skill name 末尾用
+ *       {@link SpacedRowIcon} 横排显示已安装到的每个 Agent 品牌图标, 徽标之间留 4 px
+ *       间距以避免视觉拥挤 (与 IDEA Project View VCS 标记 / Maven Tool Window conflict
+ *       标记的设计语言一致).</li>
  * </ul>
+ *
+ * <p>间距: 通过 {@code BorderLayout(GAP_NAME_BADGE, 0)} 让 CENTER 与 EAST 之间天然留白,
+ * rightLabel 自身额外加右 padding 作为"徽标尾部留白"; 徽标内部间距由 SpacedRowIcon 控制.</p>
  *
  * <p>关于"严格右对齐到 tree 宽度": 该思路在 cell renderer 模式下不可行 — 任何能拿到行
  * 左偏移的 API ({@code tree.getRowBounds} / {@code tree.getPathBounds}) 内部都会
@@ -60,8 +64,12 @@ import icons.SkillsJarsHelperIcons;
  */
 final class SkillsTreeCellRenderer extends JBPanel<SkillsTreeCellRenderer> implements TreeCellRenderer {
 
-    /** 右侧徽标与中央文本的间距 (px), 也是徽标右侧的尾部留白. */
-    private static final int RIGHT_GAP = 6;
+    /** skill name 与第一个徽标之间的横向间距 (px), 走 BorderLayout hgap. */
+    private static final int GAP_NAME_BADGE = 8;
+    /** 多个徽标之间的间距 (px). */
+    private static final int GAP_BETWEEN_BADGES = 4;
+    /** 徽标右侧尾部留白 (px), 避免徽标紧贴 cell 选中态背景的右边. */
+    private static final int GAP_TAIL = 4;
 
     @NotNull
     private final InnerRenderer inner = new InnerRenderer();
@@ -81,10 +89,12 @@ final class SkillsTreeCellRenderer extends JBPanel<SkillsTreeCellRenderer> imple
         node -> Collections.emptyList();
 
     SkillsTreeCellRenderer() {
-        super(new BorderLayout());
+        // BorderLayout hgap 让 CENTER 与 EAST 之间天然留白; rightLabel 不可见时
+        // BorderLayout 跳过它, hgap 也不会在末尾留多余空白.
+        super(new BorderLayout(JBUI.scale(GAP_NAME_BADGE), 0));
         setOpaque(false);
         rightLabel.setOpaque(false);
-        rightLabel.setBorder(JBUI.Borders.empty(0, RIGHT_GAP, 0, RIGHT_GAP));
+        rightLabel.setBorder(JBUI.Borders.emptyRight(GAP_TAIL));
         add(inner, BorderLayout.CENTER);
         add(rightLabel, BorderLayout.EAST);
     }
@@ -131,7 +141,7 @@ final class SkillsTreeCellRenderer extends JBPanel<SkillsTreeCellRenderer> imple
     }
 
     /**
-     * 仅 skill 节点 + 至少有一个有效 agent 图标时返回 RowIcon, 其他情况返回 null.
+     * 仅 skill 节点 + 至少有一个有效 agent 图标时返回组合徽标, 其他情况返回 null.
      */
     @Nullable
     private Icon computeRightIcon(Object value) {
@@ -156,7 +166,7 @@ final class SkillsTreeCellRenderer extends JBPanel<SkillsTreeCellRenderer> imple
         return switch (icons.size()) {
             case 0 -> null;
             case 1 -> icons.get(0);
-            default -> new RowIcon(icons.toArray(new Icon[0]));
+            default -> new SpacedRowIcon(JBUI.scale(GAP_BETWEEN_BADGES), icons);
         };
     }
 
@@ -204,6 +214,63 @@ final class SkillsTreeCellRenderer extends JBPanel<SkillsTreeCellRenderer> imple
             } else if (user instanceof SkillsTreeModel.SkillNode skillNode) {
                 this.append(skillNode.skill().getName());
                 this.setIcon(SkillsJarsHelperIcons.SKILLSJARS_HELPER_16);
+            }
+        }
+    }
+
+    /**
+     * 横向并列的多图标组合, 各图标之间留固定 gap, 高度按最高的图标对齐 (其他图标
+     * 垂直居中绘制).
+     *
+     * <p>为什么不用 IDEA 的 {@link com.intellij.ui.RowIcon}: 它没有图标间距参数,
+     * 多个 16x16 logo 紧贴在一起视觉拥挤. 自造一个 13 行的 {@link Icon} 实现最干净,
+     * 不引入额外依赖, 也能对每个 logo 视觉中心做垂直居中 (虽然本期所有徽标都是
+     * 同高度的 16x16, 但留出兼容空间).</p>
+     */
+    private static final class SpacedRowIcon implements Icon {
+
+        @NotNull
+        private final List<Icon> icons;
+        private final int gap;
+
+        SpacedRowIcon(int gap, @NotNull List<Icon> icons) {
+            this.gap = gap;
+            this.icons = icons;
+        }
+
+        @Override
+        public int getIconWidth() {
+            int w = 0;
+            for (int i = 0; i < icons.size(); i++) {
+                w += icons.get(i).getIconWidth();
+                if (i > 0) {
+                    w += gap;
+                }
+            }
+            return w;
+        }
+
+        @Override
+        public int getIconHeight() {
+            int h = 0;
+            for (Icon icon : icons) {
+                h = Math.max(h, icon.getIconHeight());
+            }
+            return h;
+        }
+
+        @Override
+        public void paintIcon(Component c, Graphics g, int x, int y) {
+            int totalH = getIconHeight();
+            int cx = x;
+            for (int i = 0; i < icons.size(); i++) {
+                if (i > 0) {
+                    cx += gap;
+                }
+                Icon icon = icons.get(i);
+                int yOff = (totalH - icon.getIconHeight()) / 2;
+                icon.paintIcon(c, g, cx, y + yOff);
+                cx += icon.getIconWidth();
             }
         }
     }
