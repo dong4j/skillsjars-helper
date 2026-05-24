@@ -19,8 +19,6 @@ import javax.swing.tree.TreeCellRenderer;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -42,10 +40,15 @@ import icons.SkillsJarsHelperIcons;
  * <ul>
  *   <li>Artifact 节点: 主标签为 {@code artifactId:version}, 灰色后缀显示来源类型 (Maven / Maven Plugin
  *       等), 图标用 IDEA 内置的 {@code AllIcons.Nodes.PpLib}; 右侧不显示徽标.</li>
- *   <li>Skill 节点: 只显示 skill 名 (左侧 skill 主图标), 右侧用 {@link RowIcon} 横排显示已安装到的
- *       每个 Agent 品牌图标. 通过强制把 cell 宽度撑到 tree 宽度, 让 EAST 区域真正贴到 cell 右边,
- *       多个 skill 行的徽标列视觉上对齐.</li>
+ *   <li>Skill 节点: 只显示 skill 名 (左侧 skill 主图标), 紧跟在 skill name 末尾用 {@link RowIcon}
+ *       横排显示已安装到的每个 Agent 品牌图标 (与 IDEA Project View VCS 标记 / Maven Tool Window
+ *       conflict 标记的设计语言一致).</li>
  * </ul>
+ *
+ * <p>关于"严格右对齐到 tree 宽度": 该思路在 cell renderer 模式下不可行 — 任何能拿到行
+ * 左偏移的 API ({@code tree.getRowBounds} / {@code tree.getPathBounds}) 内部都会
+ * 反查 renderer 量尺寸, 形成无限递归 (StackOverflowError); 用 {@code tree.getWidth()}
+ * 撑宽又会把 cell 推出可视区. 因此回到"紧跟末尾"的稳态.</p>
  *
  * <p>选中态: 由 panel 自画背景 (用 {@link UIUtil#getTreeSelectionBackground(boolean)}),
  * inner renderer 设为 {@code opaque=false} 避免双层重叠. 文字颜色仍由 inner 的
@@ -57,8 +60,8 @@ import icons.SkillsJarsHelperIcons;
  */
 final class SkillsTreeCellRenderer extends JBPanel<SkillsTreeCellRenderer> implements TreeCellRenderer {
 
-    /** 右侧徽标与中央文本的间距 (px). */
-    private static final int RIGHT_GAP = 8;
+    /** 右侧徽标与中央文本的间距 (px), 也是徽标右侧的尾部留白. */
+    private static final int RIGHT_GAP = 6;
 
     @NotNull
     private final InnerRenderer inner = new InnerRenderer();
@@ -81,7 +84,7 @@ final class SkillsTreeCellRenderer extends JBPanel<SkillsTreeCellRenderer> imple
         super(new BorderLayout());
         setOpaque(false);
         rightLabel.setOpaque(false);
-        rightLabel.setBorder(JBUI.Borders.empty(0, RIGHT_GAP, 0, 4));
+        rightLabel.setBorder(JBUI.Borders.empty(0, RIGHT_GAP, 0, RIGHT_GAP));
         add(inner, BorderLayout.CENTER);
         add(rightLabel, BorderLayout.EAST);
     }
@@ -112,7 +115,7 @@ final class SkillsTreeCellRenderer extends JBPanel<SkillsTreeCellRenderer> imple
         rightLabel.setIcon(rightIcon);
         rightLabel.setVisible(rightIcon != null);
 
-        // 3. 选中背景: 整行高亮.
+        // 3. 选中背景: 整行高亮 (cell 自然宽度内).
         if (selected) {
             setBackground(UIUtil.getTreeSelectionBackground(hasFocus));
             setOpaque(true);
@@ -120,22 +123,10 @@ final class SkillsTreeCellRenderer extends JBPanel<SkillsTreeCellRenderer> imple
             setOpaque(false);
         }
 
-        // 4. 关键: 把 cell 宽度撑到 tree 可见宽度, 让 EAST 真正贴到 cell 右边. 否则 BorderLayout
-        //    只会把 EAST 紧贴 inner 末尾, 看起来仍像 "图标在 name 后" 而非 "右对齐到树宽".
-        Dimension innerPref = inner.getPreferredSize();
-        int height = innerPref.height;
-        int rightWidth = rightLabel.isVisible() ? rightLabel.getPreferredSize().width : 0;
-        int minWidth = innerPref.width + rightWidth;
-        int width = minWidth;
-        if (tree.getWidth() > 0) {
-            Rectangle bounds = tree.getRowBounds(row);
-            int x = bounds != null ? bounds.x : 0;
-            if (bounds != null && bounds.height > 0) {
-                height = bounds.height;
-            }
-            width = Math.max(minWidth, tree.getWidth() - x);
-        }
-        setPreferredSize(new Dimension(width, height));
+        // 4. preferredSize 由 BorderLayout 按 inner + rightLabel 自然累加得出 — 不再
+        //    主动设置, 也不调 tree.getRowBounds (它会反查 renderer 触发无限递归).
+        //    主动清掉上一帧可能留下的 preferredSize, 让 layout manager 重新计算.
+        setPreferredSize(null);
         return this;
     }
 
