@@ -35,21 +35,28 @@ import icons.SkillsJarsHelperIcons;
  * SkillsJars Tool Window 树视图的单元渲染器.
  *
  * <p>布局: 一个 {@link BorderLayout} 容器, CENTER 是常规 {@link ColoredTreeCellRenderer}
- * (画 skill / artifact 的图标 + 文本), EAST 是一个 {@link JLabel} 用来在 skill name
- * 末尾紧跟"已安装到的 Agent 徽标".</p>
+ * (画 skill / artifact 的图标 + 文本), EAST 是一个 {@link JLabel} 用来在 cell 右侧
+ * 显示"已安装到的 Agent 徽标".</p>
+ *
+ * <p><strong>关于徽标位置 (右对齐到 cell 右侧)</strong>: IDEA 的 {@code com.intellij.ui.treeStructure.Tree}
+ * 走 {@code DefaultTreeUI / WideSelectionTreeUI}, 它在画每行时会把 renderer 的 width 拉到
+ * 整行宽度 (这样选中态高亮才能整行铺满). BorderLayout 在被拉宽的容器里自然把 EAST
+ * 推到 cell 右边缘, 徽标因此呈现"右对齐"效果. 这是被采纳的最终视觉, 不再尝试"紧跟
+ * skill name"那种需要自定义 LayoutManager 才能实现的反 IDEA 默认行为.</p>
  *
  * <p>渲染规则:</p>
  * <ul>
  *   <li>Artifact 节点: 主标签为 {@code artifactId:version}, 灰色后缀显示来源类型 (Maven / Maven Plugin
  *       等), 图标用 IDEA 内置的 {@code AllIcons.Nodes.PpLib}; 不显示徽标.</li>
- *   <li>Skill 节点: 显示 skill 名 (左侧 skill 主图标), 名字之后用 {@link SpacedRowIcon}
+ *   <li>Skill 节点: 显示 skill 名 (左侧 skill 主图标), cell 右侧用 {@link SpacedRowIcon}
  *       横排已安装到的 Agent 品牌图标, 与 IDEA Project View VCS 标记 / Maven Tool Window
- *       conflict 标记一致.</li>
+ *       conflict 标记的设计语言一致.</li>
  * </ul>
  *
- * <p>间距: skill name 与第一个徽标之间走 {@code BorderLayout} 的 hgap, 徽标之间由
- * {@link SpacedRowIcon} 控制, 徽标尾部由 {@code rightLabel} 的右 padding 控制. 徽标
- * 不可见时 BorderLayout 自动跳过 EAST, hgap 不会留多余空白.</p>
+ * <p>间距: skill name 与右侧徽标之间至少留 {@code BorderLayout} 的 hgap (实际间距取决于
+ * cell 宽度与 inner 内容宽度的差值, 通常会更大), 多徽标之间由 {@link SpacedRowIcon}
+ * 控制, 徽标尾部由 {@code rightLabel} 的右 padding 撑出 cell 右边缘几像素的视觉呼吸.
+ * 徽标不可见时 BorderLayout 自动跳过 EAST, hgap 也不会留多余空白.</p>
  *
  * <p>选中态: 由 panel 自画背景 (用 {@link UIUtil#getTreeSelectionBackground(boolean)}),
  * inner renderer 设为 {@code opaque=false} 避免双层重叠. 文字颜色仍由 inner 的
@@ -61,11 +68,11 @@ import icons.SkillsJarsHelperIcons;
  */
 final class SkillsTreeCellRenderer extends JBPanel<SkillsTreeCellRenderer> implements TreeCellRenderer {
 
-    /** skill name 与第一个徽标之间的横向间距 (px), 走 BorderLayout hgap. */
+    /** skill name 与右侧徽标之间的最小横向间距 (px), 走 BorderLayout hgap. */
     private static final int GAP_NAME_BADGE = 8;
     /** 多个徽标之间的间距 (px). */
     private static final int GAP_BETWEEN_BADGES = 4;
-    /** 徽标右侧尾部留白 (px), 避免徽标紧贴 cell 选中态背景的右边. */
+    /** 徽标右侧尾部留白 (px), 避免徽标紧贴 cell 右边缘 / 选中态背景的右边. */
     private static final int GAP_TAIL = 4;
 
     @NotNull
@@ -86,8 +93,9 @@ final class SkillsTreeCellRenderer extends JBPanel<SkillsTreeCellRenderer> imple
         node -> Collections.emptyList();
 
     SkillsTreeCellRenderer() {
-        // BorderLayout hgap 让 CENTER 与 EAST 之间天然留白; rightLabel 不可见时
-        // BorderLayout 跳过它, hgap 也不会在末尾留多余空白.
+        // BorderLayout hgap 在 cell 被 IDEA Tree 拉宽时只是 CENTER 与 EAST 之间的最小
+        // 间距 — 实际间距随 cell 宽度变化, 视觉上徽标是"右对齐到 cell 右侧". rightLabel
+        // 不可见时 BorderLayout 跳过它, hgap 也不会在末尾留多余空白.
         super(new BorderLayout(JBUI.scale(GAP_NAME_BADGE), 0));
         setOpaque(false);
         rightLabel.setOpaque(false);
