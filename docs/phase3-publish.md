@@ -7,11 +7,11 @@
 
 ## 1. 文档间 gap 与本草案的口径
 
-| 来源 | 三期范围 |
-|---|---|
-| `README.md` 开发状态表 | ① SkillsJar 发布前检查 + 打包配置生成；② Gradle 依赖扫描 |
-| `docs/design.md` MVP 步骤 11–14 | ① 发布前检查；② 打包配置；③ Marketplace 搜索安装；④ Skill 生成 |
-| 本草案 | 收敛到 **发布（A 模块）+ Gradle 扫描（B 模块）+ 风险检查轻量版（C 模块）**，其余推迟 |
+| 来源                            | 三期范围                                                  |
+|-------------------------------|-------------------------------------------------------|
+| `README.md` 开发状态表             | ① SkillsJar 发布前检查 + 打包配置生成；② Gradle 依赖扫描              |
+| `docs/design.md` MVP 步骤 11–14 | ① 发布前检查；② 打包配置；③ Marketplace 搜索安装；④ Skill 生成          |
+| 本草案                           | 收敛到 **发布（A 模块）+ Gradle 扫描（B 模块）+ 风险检查轻量版（C 模块）**，其余推迟 |
 
 **剔除项**（明确不在三期）：
 
@@ -23,12 +23,12 @@
 
 ### A. SkillsJar 发布（核心）
 
-| 编号 | 子模块 | 说明 |
-|---|---|---|
-| A1 | Skills Directory Validator | 检测 `skills/` 目录结构、`SKILL.md` 校验、frontmatter / allowed-tools / license / 引用文件检查 |
-| A2 | POM Configuration Generator | 在 `pom.xml` 中生成 / 更新 `skillsjars-maven-plugin` 配置；自定义 `skillsDir` 时生成对应配置；改动前 diff 预览 |
-| A3 | Local Package Verifier | 触发 `mvn skillsjars:package`，输出 jar 路径、sha256、构建日志 |
-| A4 | Publish Wizard UI | 多步向导，串联 A1→A3，展示坐标 / Skill 列表 / 版本号 / 发布目标 / 校验与打包结果 |
+| 编号 | 子模块                                | 说明                                                                                                                 |
+|----|------------------------------------|--------------------------------------------------------------------------------------------------------------------|
+| A1 | Skills Directory Validator         | 检测 `skills/` 目录结构、`SKILL.md` 校验、frontmatter / allowed-tools / license / 引用文件检查                                     |
+| A2 | POM Configuration Generator        | 在 `pom.xml` 中生成 / 更新 `skillsjars-maven-plugin` 配置；自定义 `skillsDir` 时生成对应配置；改动前 diff 预览                              |
+| A3 | Local Package Verifier             | 触发 `mvn skillsjars:package`，输出 jar 路径、sha256、构建日志                                                                  |
+| A4 | Publish Wizard UI                  | 多步向导，串联 A1→A3，展示坐标 / Skill 列表 / 版本号 / 发布目标 / 校验与打包结果                                                               |
 | A5 | `SkillsJarPublisher` 公共 API + 数据模型 | 对齐 `docs/design.md` 第 634–637 行接口草案，定义 `SkillsJarValidationResult` / `PublishOptions` / `PublishPreparationResult` |
 
 ### B. Gradle 依赖扫描（顺带）
@@ -42,24 +42,24 @@
 
 对齐 `docs/design.md` 第 596–608 行的风险表：
 
-| 风险 | 条件 |
-|---|---|
-| Low | 只包含 `Read` / `Grep` / `Glob` 等读取类工具 |
-| Medium | 包含 `Edit` / `Write` / `MultiEdit` |
-| High | 包含 `Bash` / 网络命令提示 / 删除文件提示 / 凭据相关文本 |
+| 风险     | 条件                                   |
+|--------|--------------------------------------|
+| Low    | 只包含 `Read` / `Grep` / `Glob` 等读取类工具  |
+| Medium | 包含 `Edit` / `Write` / `MultiEdit`    |
+| High   | 包含 `Bash` / 网络命令提示 / 删除文件提示 / 凭据相关文本 |
 
 - 仅在 ToolWindow 现有的 Risk 展示位填上等级（一/二期是空的）
 - **不参与**发布阻断；只影响用户决策
 
 ## 3. 关键决策点
 
-| 决策点 | 决议 | 依据 |
-|---|---|---|
-| 是否做实际上传执行 | **否**，仅做 Prep | `docs/design.md` 第 546 行原则；涉及凭据管理风险 |
-| GitHub Deploy 路径 | 仅生成跳转链接（外部浏览器打开），不在 IDE 内执行 | 对齐官网现有 Publish 表单 |
-| 校验严格度 | 分级：`name` / `description` / `SKILL.md` 缺失 → **硬阻断**；`license` 缺失 / 引用文件不存在 → **警告** | 对齐 `docs/design.md` 第 502–505 行表格；硬阻断仅针对会让 Maven 打包失败或 SkillsJar 不可用的项 |
-| 风险检查是否阻断发布 | **否**，仅展示 | 风险等级是辅助决策，不应阻断发布 |
-| Gradle 是否纳入三期 | **是** | 对齐 README 三期表格；工作量小；早做能让一/二期 Maven 专用代码暴露泛化问题 |
+| 决策点              | 决议                                                                                  | 依据                                                                     |
+|------------------|-------------------------------------------------------------------------------------|------------------------------------------------------------------------|
+| 是否做实际上传执行        | **否**，仅做 Prep                                                                       | `docs/design.md` 第 546 行原则；涉及凭据管理风险                                    |
+| GitHub Deploy 路径 | 仅生成跳转链接（外部浏览器打开），不在 IDE 内执行                                                         | 对齐官网现有 Publish 表单                                                      |
+| 校验严格度            | 分级：`name` / `description` / `SKILL.md` 缺失 → **硬阻断**；`license` 缺失 / 引用文件不存在 → **警告** | 对齐 `docs/design.md` 第 502–505 行表格；硬阻断仅针对会让 Maven 打包失败或 SkillsJar 不可用的项 |
+| 风险检查是否阻断发布       | **否**，仅展示                                                                           | 风险等级是辅助决策，不应阻断发布                                                       |
+| Gradle 是否纳入三期    | **是**                                                                               | 对齐 README 三期表格；工作量小；早做能让一/二期 Maven 专用代码暴露泛化问题                          |
 
 ## 4. 数据模型与 API（草案）
 
@@ -110,17 +110,17 @@ API 约束（继承一/二期）：
 
 ## 5. 工作量预估
 
-| 模块 | 量级 | 说明 |
-|---|---|---|
-| A1. Skills Directory Validator | 中 | 校验逻辑 + 错误模型 + i18n |
-| A2. POM Configuration Generator | 中偏大 | IDEA Maven 模型操作 + diff 预览组件 |
-| A3. Local Package Verifier | 小 | 封装 mvn 调用 + 输出展示 |
-| A4. Publish Wizard UI | 中 | 多步向导（DialogWrapper） |
-| A5. Publisher API + 数据模型 | 小 | 纯契约层 |
-| B. GradleLibraryScanner | 小 | 已有扩展点 + Maven scanner 范例 |
-| C. 风险检查轻量版 | 小 | 关键字判断 + ToolWindow Risk 列填值 |
-| 文档同步 | 小 | README / design.md / changelog |
-| **合计** | — | **6–8 个独立 commit 量级**，分 5–7 次小迭代上线 |
+| 模块                              | 量级  | 说明                                 |
+|---------------------------------|-----|------------------------------------|
+| A1. Skills Directory Validator  | 中   | 校验逻辑 + 错误模型 + i18n                 |
+| A2. POM Configuration Generator | 中偏大 | IDEA Maven 模型操作 + diff 预览组件        |
+| A3. Local Package Verifier      | 小   | 封装 mvn 调用 + 输出展示                   |
+| A4. Publish Wizard UI           | 中   | 多步向导（DialogWrapper）                |
+| A5. Publisher API + 数据模型        | 小   | 纯契约层                               |
+| B. GradleLibraryScanner         | 小   | 已有扩展点 + Maven scanner 范例           |
+| C. 风险检查轻量版                      | 小   | 关键字判断 + ToolWindow Risk 列填值        |
+| 文档同步                            | 小   | README / design.md / changelog     |
+| **合计**                          | —   | **6–8 个独立 commit 量级**，分 5–7 次小迭代上线 |
 
 ## 6. 实施顺序
 
@@ -151,14 +151,14 @@ API 约束（继承一/二期）：
 
 ## 7. 测试策略
 
-| 模块 | 测试方式 |
-|---|---|
-| A1 Validator | 单元测试覆盖各种 SKILL.md 异常场景 |
-| A2 POM Generator | 端到端 IDEA 集成测试成本高，先靠 `runIde` 手工验证；diff 算法部分可单测 |
-| A3 Local Package Verifier | 集成测试需要真实 Maven 环境，靠 `runIde` 手工验证 |
-| A4 Wizard UI | 仅 `runIde` 手工验证 |
-| B GradleLibraryScanner | 与 `MavenLibraryScanner` 同样的 fixture jar 测试范式，单测 |
-| C 风险检查 | 单测覆盖各种 allowed-tools 字符串 |
+| 模块                        | 测试方式                                            |
+|---------------------------|-------------------------------------------------|
+| A1 Validator              | 单元测试覆盖各种 SKILL.md 异常场景                          |
+| A2 POM Generator          | 端到端 IDEA 集成测试成本高，先靠 `runIde` 手工验证；diff 算法部分可单测  |
+| A3 Local Package Verifier | 集成测试需要真实 Maven 环境，靠 `runIde` 手工验证               |
+| A4 Wizard UI              | 仅 `runIde` 手工验证                                 |
+| B GradleLibraryScanner    | 与 `MavenLibraryScanner` 同样的 fixture jar 测试范式，单测 |
+| C 风险检查                    | 单测覆盖各种 allowed-tools 字符串                        |
 
 ## 8. 与一/二期的兼容性
 
