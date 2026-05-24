@@ -623,6 +623,84 @@ SkillsJars Helper 可以和 IntelliAI Engine 集成，但不依赖它。
 14. 实现 Maven package 配置生成。
 15. 补充基础测试样例 Jar。
 
+## 一期实施现状（解析链路落地说明）
+
+> 当前仓库已经完成 1–7 步对应的最小闭环；导出 / 安装 / 发布相关章节仍属于规划文档。
+
+### 已落地的代码结构
+
+```text
+src/main/java/dev/dong4j/idea/skillsjars/helper/
+├── api/                        # 公共 API（面向第三方插件复用）
+│   ├── SkillRegistry.java
+│   ├── SkillRegistryListener.java
+│   └── model/
+│       ├── SkillCoordinate.java
+│       ├── SkillDescriptor.java
+│       ├── SkillJarArtifact.java
+│       └── SkillSourceType.java
+├── scanner/                    # 扩展点 + 内置扫描器
+│   ├── SkillSourceScanner.java        # 扩展点 EP
+│   ├── ScanContext.java
+│   ├── SkillJarSource.java
+│   ├── AbstractLibraryScanner.java
+│   ├── MavenLibraryScanner.java       # 一期 EP 实现 1
+│   └── MavenPluginDependencyScanner.java # 一期 EP 实现 2（可选 Maven 集成）
+├── parser/                     # SKILL.md 解析
+│   ├── SkillFrontmatterParser.java
+│   ├── ParsedSkillMd.java
+│   └── SkillJarParser.java
+├── service/
+│   └── SkillRegistryService.java      # 项目级 Service，实现 SkillRegistry
+└── toolwindow/
+    ├── SkillsToolWindowFactory.java
+    ├── SkillsToolWindowPanel.java
+    └── SkillsTableModel.java
+```
+
+### 调用链
+
+```text
+ToolWindow 打开 / Refresh
+    └── SkillRegistry.refresh()
+        └── ProgressManager (后台线程)
+            └── 遍历 SkillSourceScanner EP
+                ├── MavenLibraryScanner          → 普通 <dependency>
+                └── MavenPluginDependencyScanner → plugin 内 <dependencies>
+            └── 协调层按 jar 路径去重
+            └── SkillJarParser
+                ├── 仅识别 META-INF/skills/**/SKILL.md
+                ├── 仅识别 META-INF/resources/skills/**/SKILL.md
+                └── SkillFrontmatterParser
+            └── 写入 AtomicReference<List<SkillJarArtifact>>
+            └── invokeLater 派发监听器
+                └── ToolWindow 表格刷新
+```
+
+### 扩展点契约
+
+外部插件（含未来的 `GradleLibraryScanner`）只需实现
+`dev.dong4j.idea.skillsjars.helper.scanner.SkillSourceScanner`，并在自己的 `plugin.xml` 中
+注册到扩展点：
+
+```xml
+<extensions defaultExtensionNs="dev.dong4j.idea.skillsjars.helper">
+    <skillSourceScanner implementation="..." />
+</extensions>
+```
+
+调用方读取扫描结果走 `SkillRegistry.getInstance(project)`，事件订阅走
+`addListener` 返回的 `Disposable`。
+
+### 一期的边界
+
+- 仅识别 `META-INF/skills/**/SKILL.md` 与 `META-INF/resources/skills/**/SKILL.md`。
+- 仅 Maven 项目；Gradle 库虽然 `SkillCoordinate` 已支持解析 `Gradle:` 前缀，但二期才提供
+  对应的 `GradleLibraryScanner`。
+- Tool Window 仅五列：Skill / Description / Source / Artifact / Allowed Tools；
+  Risk / Installed 两列留给后续阶段。
+- 没有写入 / 导出 / 发布动作，所有动作只读。
+
 ## 暂不处理的问题
 
 - 完整 Gradle 依赖图解析。

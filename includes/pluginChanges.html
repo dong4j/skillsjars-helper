@@ -1,4 +1,11 @@
 <div>
+    <h3>0.2.0</h3>
+    <ul>
+        <li>Added the SkillsJars discovery pipeline: Maven dependency scanner, Maven plugin dependency scanner, JAR-level <code>SKILL.md</code> parser, and a project-level <code>SkillRegistry</code> service.</li>
+        <li>Introduced the <code>dev.dong4j.idea.skillsjars.helper.skillSourceScanner</code> extension point so future Gradle/SBT scanners and third-party plugins can plug in without changes to the coordinator.</li>
+        <li>Added the <code>Agent Skills</code> tool window with a sortable table (Skill / Description / Source / Artifact / Allowed Tools) and Refresh / Open Source Jar actions.</li>
+        <li>Added unit tests for frontmatter parsing, JAR parsing, coordinate parsing, and the table model.</li>
+    </ul>
     <h3>0.1.0</h3>
     <ul>
         <li>Initialized the JetBrains IDE plugin project from the non-AI template.</li>
