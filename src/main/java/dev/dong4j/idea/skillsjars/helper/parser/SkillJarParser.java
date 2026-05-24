@@ -17,6 +17,7 @@ import java.util.jar.JarFile;
 
 import dev.dong4j.idea.skillsjars.helper.api.model.SkillCoordinate;
 import dev.dong4j.idea.skillsjars.helper.api.model.SkillDescriptor;
+import dev.dong4j.idea.skillsjars.helper.api.model.SkillFileEntry;
 import dev.dong4j.idea.skillsjars.helper.api.model.SkillJarArtifact;
 import dev.dong4j.idea.skillsjars.helper.api.model.SkillSourceType;
 
@@ -98,16 +99,63 @@ public final class SkillJarParser {
 
         List<SkillDescriptor> skills = new ArrayList<>();
         try (JarFile jarFile = new JarFile(jarPath.toFile())) {
+            // 一次遍历: 同时收集所有 SKILL.md 入口和它们各自根目录下的文件清单.
+            // 比起两遍扫描 (先找 SKILL.md, 再按 root 二次扫描) 节省一半时间, 而 jar 入口
+            // 顺序无关, 哪个先出现都不影响最终结果.
+            List<JarEntry> skillMdEntries = new ArrayList<>();
+            // root -> files 列表, 保留顺序便于测试可重复
+            java.util.LinkedHashMap<String, List<SkillFileEntry>> filesByRoot = new java.util.LinkedHashMap<>();
+
             var entries = jarFile.entries();
             while (entries.hasMoreElements()) {
                 JarEntry entry = entries.nextElement();
                 if (entry.isDirectory()) {
                     continue;
                 }
-                if (!isSkillMdEntry(entry.getName())) {
-                    continue;
+                if (isSkillMdEntry(entry.getName())) {
+                    skillMdEntries.add(entry);
                 }
-                SkillDescriptor descriptor = readDescriptor(jarFile, entry);
+            }
+
+            // 第二次轻量遍历 (entries 已耗尽, 重新打开): 按已知 roots 收集文件
+            // 注意: jarFile.entries() 不能直接重置, 但我们已经把 SKILL.md 入口拿到,
+            // 直接迭代第二次.
+            try (JarFile second = new JarFile(jarPath.toFile())) {
+                // 先准备 roots
+                List<String> roots = new ArrayList<>();
+                for (JarEntry e : skillMdEntries) {
+                    String entryName = e.getName();
+                    String root = entryName.substring(0, entryName.length() - SKILL_MD.length());
+                    roots.add(root);
+                    filesByRoot.put(root, new ArrayList<>());
+                }
+                var es = second.entries();
+                while (es.hasMoreElements()) {
+                    JarEntry e = es.nextElement();
+                    if (e.isDirectory()) {
+                        continue;
+                    }
+                    String name = e.getName();
+                    for (String root : roots) {
+                        if (name.startsWith(root) && !name.equals(root)) {
+                            String relative = name.substring(root.length());
+                            // 同一 jar 内一个 root 是另一个 root 的祖先时, 文件可能被重复归属
+                            // (例如 root1=META-INF/skills/a/, root2=META-INF/skills/a/b/).
+                            // 取最深匹配避免重复. 这里用 longest-prefix 选择.
+                            String winner = longestPrefixRoot(roots, name);
+                            if (root.equals(winner)) {
+                                filesByRoot.get(root).add(new SkillFileEntry(relative, e.getSize()));
+                            }
+                            break;
+                        }
+                    }
+                }
+            }
+
+            for (JarEntry entry : skillMdEntries) {
+                String entryName = entry.getName();
+                String root = entryName.substring(0, entryName.length() - SKILL_MD.length());
+                SkillDescriptor descriptor = readDescriptor(jarFile, entry, filesByRoot.getOrDefault(root, List.of()));
                 if (descriptor != null) {
                     skills.add(descriptor);
                 }
@@ -142,7 +190,9 @@ public final class SkillJarParser {
      * 把单个 SKILL.md 入口转换成 {@link SkillDescriptor}.
      */
     @Nullable
-    private static SkillDescriptor readDescriptor(@NotNull JarFile jarFile, @NotNull JarEntry entry) {
+    private static SkillDescriptor readDescriptor(@NotNull JarFile jarFile,
+                                                  @NotNull JarEntry entry,
+                                                  @NotNull List<SkillFileEntry> files) {
         String entryName = entry.getName();
         String jarEntryRoot = entryName.substring(0, entryName.length() - SKILL_MD.length());
         String fallbackName = inferNameFromRoot(jarEntryRoot);
@@ -165,8 +215,24 @@ public final class SkillJarParser {
             parsed.getLicense(),
             jarEntryRoot,
             entryName,
-            parsed.getBody()
+            parsed.getBody(),
+            files
         );
+    }
+
+    /**
+     * 在 roots 中找出 entryName 的最长前缀 root, 用于嵌套 skill 目录时把文件归属到
+     * 最深的那个 skill, 而不是同时归属到祖先 skill.
+     */
+    @NotNull
+    private static String longestPrefixRoot(@NotNull List<String> roots, @NotNull String entryName) {
+        String winner = "";
+        for (String root : roots) {
+            if (entryName.startsWith(root) && root.length() > winner.length()) {
+                winner = root;
+            }
+        }
+        return winner;
     }
 
     /**

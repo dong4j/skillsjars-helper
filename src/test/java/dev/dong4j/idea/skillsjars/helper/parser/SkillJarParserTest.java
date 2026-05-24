@@ -164,6 +164,41 @@ class SkillJarParserTest {
     }
 
     @Test
+    @DisplayName("应该枚举 skill 根目录下的所有文件作为 files 字段")
+    void should_enumerate_files_under_skill_root() throws IOException {
+        Path jarPath = this.tempDir.resolve("withfiles.jar");
+        writeJarWith(jarPath,
+            new String[]{
+                "META-INF/skills/dev/dong4j/code-review/SKILL.md",
+                "META-INF/skills/dev/dong4j/code-review/examples/sample.md",
+                "META-INF/skills/dev/dong4j/code-review/scripts/run.sh",
+                // 同 jar 内另一个 skill 的文件不应混入
+                "META-INF/skills/other/foo/SKILL.md"
+            },
+            new String[]{
+                "---\nname: code-review\n---\n",
+                "example body",
+                "#!/bin/sh\necho hi\n",
+                "---\nname: foo\n---\n"
+            });
+
+        SkillJarArtifact artifact = this.parser.parse(
+            jarPath, mockVirtualFile(jarPath),
+            SkillSourceType.MAVEN_DEPENDENCY, SkillCoordinate.unknown(), null);
+
+        assertThat(artifact).isNotNull();
+        SkillDescriptor cr = artifact.getSkills().stream()
+            .filter(s -> s.getName().equals("code-review"))
+            .findFirst().orElseThrow();
+        assertThat(cr.getFiles()).extracting(f -> f.getRelativePath())
+            .containsExactlyInAnyOrder(
+                "SKILL.md",
+                "examples/sample.md",
+                "scripts/run.sh"
+            );
+    }
+
+    @Test
     @DisplayName("不在 SkillsJars 路径下的 SKILL.md 不应被采纳")
     void should_ignore_unrelated_skill_md() throws IOException {
         Path jarPath = this.tempDir.resolve("unrelated.jar");
