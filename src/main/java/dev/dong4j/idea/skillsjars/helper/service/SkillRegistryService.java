@@ -30,6 +30,7 @@ import dev.dong4j.idea.skillsjars.helper.parser.SkillJarParser;
 import dev.dong4j.idea.skillsjars.helper.scanner.ScanContext;
 import dev.dong4j.idea.skillsjars.helper.scanner.SkillJarSource;
 import dev.dong4j.idea.skillsjars.helper.scanner.SkillSourceScanner;
+import dev.dong4j.idea.skillsjars.helper.util.SkillsJarsHelperBundle;
 
 /**
  * SkillRegistry 的项目级实现.
@@ -202,7 +203,7 @@ public final class SkillRegistryService implements SkillRegistry, Disposable {
             if (!scanner.isApplicable(context)) {
                 continue;
             }
-            indicator.setText2("Scanning: " + scanner.getDisplayName());
+            indicator.setText2(SkillsJarsHelperBundle.message("scanner.scanning", scanner.getDisplayName()));
             try {
                 for (SkillJarSource source : scanner.scan(context)) {
                     // 同一 jar 路径只保留第一个扫描器的结果, 避免来源被覆盖.

@@ -19,6 +19,7 @@ import java.util.Set;
 
 import dev.dong4j.idea.skillsjars.helper.api.model.SkillCoordinate;
 import dev.dong4j.idea.skillsjars.helper.api.model.SkillSourceType;
+import dev.dong4j.idea.skillsjars.helper.util.SkillsJarsHelperBundle;
 
 /**
  * Maven 插件依赖扫描器.
@@ -52,7 +53,7 @@ public final class MavenPluginDependencyScanner implements SkillSourceScanner {
     @Override
     @NotNull
     public String getDisplayName() {
-        return "Maven Plugin Dependencies";
+        return SkillsJarsHelperBundle.message("scanner.maven.plugin.dependencies");
     }
 
     @Override

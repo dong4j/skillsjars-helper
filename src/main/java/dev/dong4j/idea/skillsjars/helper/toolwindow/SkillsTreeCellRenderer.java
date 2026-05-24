@@ -27,6 +27,7 @@ import java.util.function.Function;
 
 import dev.dong4j.idea.skillsjars.helper.api.model.SkillJarArtifact;
 import dev.dong4j.idea.skillsjars.helper.api.model.SkillSourceType;
+import dev.dong4j.idea.skillsjars.helper.util.SkillsJarsHelperBundle;
 
 import icons.SkillsJarsHelperIcons;
 
@@ -166,18 +167,22 @@ final class SkillsTreeCellRenderer extends JBPanel<SkillsTreeCellRenderer> imple
     }
 
     /**
-     * 把 {@link SkillSourceType} 渲染为人类可读标签, 与状态栏使用同一份文案.
+     * 把 {@link SkillSourceType} 渲染为人类可读标签, 与 tooltip / 状态栏使用同一份文案.
+     *
+     * <p>所有文案走 i18n bundle, 保证中英文 IDE 显示一致 (英文 bundle 与原硬编码完全
+     * 等价: Maven / Maven Plugin / Gradle / Module Output / External Library / Local Jar).</p>
      */
     @NotNull
     static String formatSource(@NotNull SkillSourceType type) {
-        return switch (type) {
-            case MAVEN_DEPENDENCY -> "Maven";
-            case MAVEN_PLUGIN_DEPENDENCY -> "Maven Plugin";
-            case GRADLE_DEPENDENCY -> "Gradle";
-            case PROJECT_OUTPUT -> "Module Output";
-            case EXTERNAL_LIBRARY -> "External Library";
-            case LOCAL_JAR -> "Local Jar";
+        String key = switch (type) {
+            case MAVEN_DEPENDENCY -> "skill.source.maven";
+            case MAVEN_PLUGIN_DEPENDENCY -> "skill.source.maven.plugin";
+            case GRADLE_DEPENDENCY -> "skill.source.gradle";
+            case PROJECT_OUTPUT -> "skill.source.project.output";
+            case EXTERNAL_LIBRARY -> "skill.source.external.library";
+            case LOCAL_JAR -> "skill.source.local.jar";
         };
+        return SkillsJarsHelperBundle.message(key);
     }
 
     /**

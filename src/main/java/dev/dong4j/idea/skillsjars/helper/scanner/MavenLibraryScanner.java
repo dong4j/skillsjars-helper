@@ -3,6 +3,7 @@ package dev.dong4j.idea.skillsjars.helper.scanner;
 import org.jetbrains.annotations.NotNull;
 
 import dev.dong4j.idea.skillsjars.helper.api.model.SkillSourceType;
+import dev.dong4j.idea.skillsjars.helper.util.SkillsJarsHelperBundle;
 
 /**
  * Maven 普通依赖扫描器.
@@ -34,7 +35,7 @@ public final class MavenLibraryScanner extends AbstractLibraryScanner {
     @Override
     @NotNull
     public String getDisplayName() {
-        return "Maven Dependencies";
+        return SkillsJarsHelperBundle.message("scanner.maven.dependencies");
     }
 
     @Override
