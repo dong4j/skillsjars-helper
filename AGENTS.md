@@ -57,7 +57,7 @@ skillsjars-helper/
 │   ├── index.html                       英文落地页
 │   ├── zh/index.html                    中文落地页
 │   ├── assets/                          双语共享 (styles / main.js / 图标 / banner)
-│   ├── nginx.conf                       站点 nginx 配置 (deploy.sh -n 上传)
+│   ├── skillsjars-helper.dong4j.site.conf  软链 → 中央 nginx 配置 (ecs/aliyun/nginx/conf.d/同名文件); 本地软链名 = 中央文件名 = 远程文件名
 │   └── README.md                        landing 自身的 README (本地预览 / 部署细节)
 ├── src/main/
 │   ├── java/dev/dong4j/idea/skillsjars/helper/

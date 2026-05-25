@@ -23,7 +23,10 @@ landing/                    # 仓库根下, 与插件主代码并列
 │   ├── plugin-icon.svg     # 插件官方图标 (Marketplace 同款), header / footer / favicon 都引这一份
 │   ├── banner.png          # OG image (复用项目根 banner.png)
 │   └── agents/             # 9 个 Agent 高清品牌徽标 (复用 src/main/resources)
-├── nginx.conf              # 站点 nginx 配置, deploy.sh -n 会上传到 /etc/nginx/conf.d/
+├── skillsjars-helper.dong4j.site.conf
+│                           # 软链 → ~/Developer/3.Knowledge/Site/hexo/dependencies/ecs/aliyun/nginx/conf.d/skillsjars-helper.dong4j.site.conf
+│                           # (ECS 所有 nginx 配置集中管理, 本地软链名 = 中央文件名 = 远程文件名 三处统一,
+│                           #  在本仓库里改 == 改中央文件)
 └── README.md               # 当前文件
 ```
 
@@ -78,26 +81,51 @@ python3 -m http.server 8000
 如果不想用脚本, 也可以直接 rsync:
 
 ```bash
-# 假设服务器上的目标目录是 /var/www/skillsjars-helper
-rsync -avz --delete landing/ \
-  user@your-server:/var/www/skillsjars-helper/
+# 服务器上的目标目录 (与 deploy.sh REMOTE_ROOT_DIR 一致)
+rsync -avz --delete --chmod=F644,D755 \
+  --exclude 'skillsjars-helper.dong4j.site.conf' --exclude 'README.md' \
+  landing/ user@your-server:/var/www/skillsjars-helper/
 
-# nginx 配置: 直接用仓库内 landing/nginx.conf, 上传到 /etc/nginx/conf.d/
-scp landing/nginx.conf user@your-server:/etc/nginx/conf.d/skillsjars-helper.conf
+# nginx 配置: landing/skillsjars-helper.dong4j.site.conf 是软链, --copy-links 把它解析后上传
+rsync -avz --copy-links landing/skillsjars-helper.dong4j.site.conf \
+  user@your-server:/etc/nginx/conf.d/skillsjars-helper.dong4j.site.conf
 ssh user@your-server "nginx -t && systemctl reload nginx"
 ```
+
+### nginx 配置的中央管理 (重要)
+
+`landing/skillsjars-helper.dong4j.site.conf` 是软链, 指向作者本机 nginx 配置仓库:
+
+```
+~/Developer/3.Knowledge/Site/hexo/dependencies/ecs/aliyun/nginx/conf.d/skillsjars-helper.dong4j.site.conf
+```
+
+命名约定: **本地软链名 = 中央文件名 = 远程文件名**三处统一, 不再用 `nginx.conf` 这种通名,
+一眼就能在 `landing/` 里看出对应的是哪个站点。
+
+含义:
+
+- 在本仓库内**编辑 `landing/skillsjars-helper.dong4j.site.conf`** 等价于直接改中央配置文件,
+  方便插件作者在 plugin 上下文里调 nginx.
+- 部署有两条等价路径:
+  1. **本仓库**`./deploy.sh -n` —— 解析软链后只推这一份 conf, 适合迭代时快速 reload.
+  2. **中央仓库**`deploy.sh` (即 `ecs/aliyun/nginx/deploy.sh`) —— 整套 conf.d 全量同步,
+     用于跨站点的批量发布.
+- 三方 fork 者 (没有作者本机那套目录) 看到的就是一个**断链**;
+  此时把软链删掉, 在原地放回任何普通 conf 文件 (改 `NGINX_CONF_NAME` 变量也行),
+  deploy.sh 全程兼容.
 
 ### 加 HTTPS (推荐 certbot)
 
 ```bash
-sudo certbot --nginx -d skillsjars-helper.example.com
+sudo certbot --nginx -d skillsjars-helper.dong4j.site
 ```
 
 ### 验证
 
 ```bash
-curl -I https://skillsjars-helper.example.com/
-# 期望: HTTP/2 200, Cache-Control 头按 nginx.conf 配置返回
+curl -I https://skillsjars-helper.dong4j.site/
+# 期望: HTTP/2 200, Cache-Control 头按 skillsjars-helper.dong4j.site.conf 配置返回
 ```
 
 ---

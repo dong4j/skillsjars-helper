@@ -25,7 +25,7 @@ SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
 # 没配的话可改成 user@1.2.3.4 这种完整形式.
 REMOTE_HOST="${SKILLSJARS_DEPLOY_HOST:-aliyun}"
 
-# 远程站点 root 目录, 必须与 landing/nginx.conf 中 `root` 一致.
+# 远程站点 root 目录, 必须与 landing/skillsjars-helper.dong4j.site.conf 中 `root` 一致.
 REMOTE_ROOT_DIR="${SKILLSJARS_DEPLOY_ROOT:-/var/www/skillsjars-helper}"
 
 # 远程 nginx conf.d 目录 (一般不用改).
@@ -35,7 +35,7 @@ REMOTE_NGINX_CONF_DIR="${SKILLSJARS_DEPLOY_NGINX_DIR:-/etc/nginx/conf.d}"
 REMOTE_DATA_DIR="${SKILLSJARS_DEPLOY_DATA_DIR:-}"
 
 # 部署完成后输出的访问地址 (仅文案展示, 不影响实际部署逻辑).
-SITE_URL="${SKILLSJARS_DEPLOY_SITE_URL:-https://skillsjars-helper.example.com}"
+SITE_URL="${SKILLSJARS_DEPLOY_SITE_URL:-https://skillsjars-helper.dong4j.site}"
 
 # Marketplace plugin ID (用于发布完成后输出 Marketplace 链接).
 PLUGIN_MARKETPLACE_ID="31935"
@@ -45,10 +45,18 @@ PLUGIN_MARKETPLACE_ID="31935"
 ############################################
 PLUGIN_NAME="skillsjars-helper"
 LANDING_DIR="$SCRIPT_DIR/landing"
-NGINX_CONF_FILE="$LANDING_DIR/nginx.conf"
+# 站点 nginx 配置文件 (本地路径).
+# 它是一个软链 → /Users/.../ecs/aliyun/nginx/conf.d/skillsjars-helper.dong4j.site.conf
+# (中央 nginx 统一管理), 在仓库内编辑等价于直接改中央文件;
+# 文件名与中央 conf.d/ 内的命名约定保持一致, 一眼可看出对应哪个站点;
+# 上传时用 rsync --copy-links 把软链解析成实际内容推上去.
+NGINX_CONF_NAME="skillsjars-helper.dong4j.site.conf"
+NGINX_CONF_FILE="$LANDING_DIR/$NGINX_CONF_NAME"
 ZIP_DIR="$SCRIPT_DIR/build/distributions"
 GRADLE_PROPERTIES="$SCRIPT_DIR/gradle.properties"
-NGINX_REMOTE_CONF_NAME="${PLUGIN_NAME}.conf"
+# 远程文件名: 默认与本地 NGINX_CONF_NAME 同名 (符合中央管理约定),
+# 仅在需要把同一份配置部署成另一个文件名时才需要覆盖.
+NGINX_REMOTE_CONF_NAME="${SKILLSJARS_DEPLOY_NGINX_CONF_NAME:-$NGINX_CONF_NAME}"
 
 ############################################
 # usage helper
@@ -65,16 +73,24 @@ SkillsJars Helper 部署脚本
   -p              仅发布到 JetBrains Marketplace 默认通道 (publishDefault)
   -P              仅发布到 Marketplace beta 通道 (publishBeta)
   -z              仅打 zip + 上传到下载站 (REMOTE_ROOT_DIR + 可选 REMOTE_DATA_DIR)
-  -n              仅部署 nginx 配置 (landing/nginx.conf) 并远程 reload
+  -n              仅部署 nginx 配置 (landing/skillsjars-helper.dong4j.site.conf) 并远程 reload
   -v <version>    先把 gradle.properties 中 pluginVersion 改为此值, 再继续后续步骤
   -h              显示本帮助
 
 环境变量覆盖 (临时改一次部署目标特别有用, 不用改脚本):
-  SKILLSJARS_DEPLOY_HOST       覆盖 REMOTE_HOST    (默认 aliyun)
-  SKILLSJARS_DEPLOY_ROOT       覆盖 REMOTE_ROOT_DIR (默认 /var/www/skillsjars-helper)
-  SKILLSJARS_DEPLOY_NGINX_DIR  覆盖远程 nginx conf.d 目录 (默认 /etc/nginx/conf.d)
-  SKILLSJARS_DEPLOY_DATA_DIR   覆盖独立下载站目录 (默认空 = 跳过)
-  SKILLSJARS_DEPLOY_SITE_URL   覆盖收尾输出的访问地址
+  SKILLSJARS_DEPLOY_HOST            覆盖 REMOTE_HOST    (默认 aliyun)
+  SKILLSJARS_DEPLOY_ROOT            覆盖 REMOTE_ROOT_DIR (默认 /var/www/skillsjars-helper)
+  SKILLSJARS_DEPLOY_NGINX_DIR       覆盖远程 nginx conf.d 目录 (默认 /etc/nginx/conf.d)
+  SKILLSJARS_DEPLOY_NGINX_CONF_NAME 覆盖远程 nginx 文件名 (默认 skillsjars-helper.dong4j.site.conf)
+  SKILLSJARS_DEPLOY_DATA_DIR        覆盖独立下载站目录 (默认空 = 跳过)
+  SKILLSJARS_DEPLOY_SITE_URL        覆盖收尾输出的访问地址 (默认 https://skillsjars-helper.dong4j.site)
+
+nginx 配置说明:
+  landing/skillsjars-helper.dong4j.site.conf 是软链 → ~/Developer/3.Knowledge/Site/hexo/dependencies/ecs/aliyun/nginx/conf.d/skillsjars-helper.dong4j.site.conf
+  (ECS 所有 nginx 配置集中管理, 本地软链名 = 中央文件名 = 远程文件名 三处统一).
+  在本仓库内编辑即等价于改中央配置文件;
+  -n 选项用 rsync --copy-links 把软链解析后推到远程并 reload.
+  如需走中央 deploy.sh 批量同步, 直接在中央仓库执行那份脚本即可.
 
 示例:
   SKILLSJARS_DEPLOY_HOST=staging ./deploy.sh -d   # 临时部署到 staging 主机
@@ -157,7 +173,7 @@ $do_publish      && echo "  ✓ publishDefault → JetBrains Marketplace"
 $do_publish_beta && echo "  ✓ publishBeta   → Marketplace beta 通道"
 $do_zip          && echo "  ✓ 上传 zip → $REMOTE_HOST:$REMOTE_ROOT_DIR/"
 $do_site         && echo "  ✓ rsync landing/ → $REMOTE_HOST:$REMOTE_ROOT_DIR/"
-$do_nginx        && echo "  ✓ 上传 nginx.conf 并 reload"
+$do_nginx        && echo "  ✓ 上传 $NGINX_CONF_NAME 并 reload"
 [ -n "$VERSION" ] && echo "  ✓ 改 pluginVersion → $VERSION"
 echo "================================"
 echo ""
@@ -263,10 +279,14 @@ if $do_site; then
   ssh "$REMOTE_HOST" "mkdir -p $REMOTE_ROOT_DIR"
 
   # 全量同步, --delete 保证服务器与本地完全一致.
-  # 排除 nginx.conf — 它走 -n 单独部署, 不能跟着 root 一起放
-  # (放进站点 root 反而会被 nginx 当成静态资源外泄).
+  # 排除 nginx 配置 (NGINX_CONF_NAME) — 它走 -n 单独部署到 /etc/nginx/conf.d/,
+  # 不能跟着 root 一起放 (放进站点 root 反而会被当成静态资源外泄).
+  # --chmod=F644,D755 — 强制把所有文件落地成 644 / 目录 755,
+  # 防止本地偶尔出现的 600 文件 (比如 svg / png 被某些工具误设权限)
+  # 同步到远程后被 nginx worker 读不到, 返回 403.
   rsync -avz --delete --progress \
-    --exclude 'nginx.conf' \
+    --chmod=F644,D755 \
+    --exclude "$NGINX_CONF_NAME" \
     --exclude 'README.md' \
     --exclude '.DS_Store' \
     --exclude '*.log' \
