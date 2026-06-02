@@ -1,0 +1,104 @@
+name: Release Plugin
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Build and Release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '21'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Extract version from tag
+        id: version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+
+      - name: Build Plugin
+        run: ./gradlew buildPlugin -Porg.gradle.project.pluginVersion=${{ steps.version.outputs.VERSION }}
+
+      - name: Find built zip
+        id: artifact
+        run: |
+          ZIP_FILE=$(find . -path "./build/distributions/*.zip" -type f | head -1)
+          echo "ZIP_FILE=$ZIP_FILE"
+          echo "ZIP_FILE=$ZIP_FILE" >> $GITHUB_OUTPUT
+
+      - name: Extract changelog
+        id: changelog
+        run: |
+          VERSION=${{ steps.version.outputs.VERSION }}
+          # 版本号可能带尾部修饰 (如 "2026.1.1000 — Initial Release"),
+          # 用正则匹配版本号后必须接非数字非点字符或结束, 避免 2026.1.1 误匹配 2026.1.11
+          VER_RE="^$(echo "$VERSION" | sed 's/\./\\\\./g')([^0-9.]|$)"
+          # 从 includes/pluginChanges.html 中提取与当前 VERSION 匹配的 <h3> 块(可能为中英双语两段),
+          # 遇到下一个不同版本号的 <h3> 即停止; 之后将 HTML 转为 Markdown
+          awk -v ver_re="$VER_RE" '
+            /<h3>/ {
+              m = $0
+              sub(/.*<h3>/, "", m)
+              sub(/<\/h3>.*/, "", m)
+              if (match(m, ver_re)) {
+                if (section == 1) print ""   # 双语两段之间插入空行作为分隔
+                capture = 1
+                section++
+                next
+              }
+              if (capture) { exit }
+            }
+            capture { print }
+          ' includes/pluginChanges.html \
+            | sed -E \
+                -e 's#<strong>#**#g' -e 's#</strong>#**#g' \
+                -e 's#<b>#**#g'      -e 's#</b>#**#g' \
+                -e 's#<code>#`#g'    -e 's#</code>#`#g' \
+                -e 's#<kbd>#`#g'     -e 's#</kbd>#`#g' \
+                -e 's#<a [^>]*href="([^"]+)"[^>]*>([^<]+)</a>#[\2](\1)#g' \
+                -e 's#<li>#- #g'   -e 's#</li>##g' \
+                -e 's#<ul>##g'     -e 's#</ul>##g' \
+                -e 's#<[^>]+>##g' \
+                -e 's/^[[:space:]]+//' \
+                -e 's/[[:space:]]+$//' \
+            | awk 'NF { found = 1; blank = 0; print; next } found && !blank { blank = 1; print }' \
+            > changelog.md
+          echo "CHANGELOG_FILE=changelog.md" >> $GITHUB_OUTPUT
+          echo "----- changelog preview -----"
+          cat changelog.md
+
+      - name: Cleanup existing release
+        # 删除可能残留的同 tag release, 防止 softprops/action-gh-release 复用旧 release 时
+        # 只更新 assets 而不更新 name/body 导致页面显示与 changelog 不一致
+        continue-on-error: true
+        run: gh release delete "${{ github.ref_name }}" --yes --repo "${{ github.repository }}"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create Release
+        if: steps.artifact.outputs.ZIP_FILE != ''
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: ${{ github.ref_name }}
+          body_path: ${{ steps.changelog.outputs.CHANGELOG_FILE }}
+          draft: false
+          prerelease: false
+          generate_release_notes: false
+          files: ${{ steps.artifact.outputs.ZIP_FILE }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
