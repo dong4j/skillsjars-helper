@@ -79,6 +79,7 @@ dependencies {
 
     // 测试依赖
     testImplementation("org.junit.jupiter:junit-jupiter:5.9.2")
+    testImplementation("org.junit.vintage:junit-vintage-engine:5.9.2")
     testImplementation("org.junit.platform:junit-platform-suite:1.9.2")
     testImplementation("org.mockito:mockito-core:5.14.2")
     testImplementation("org.mockito:mockito-junit-jupiter:5.14.2")

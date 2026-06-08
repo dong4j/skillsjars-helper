@@ -153,23 +153,48 @@ ExportPlan plan = exporter.planExport(descriptor, target);
 ExportResult result = exporter.execute(plan);
 ```
 
-### 接入新的 skill 来源（Gradle / SBT / 自有构建系统）
+### Third-party SkillSourceScanner integration
 
-实现 `SkillSourceScanner` 并通过 `plugin.xml` 注册即可:
+实现 `SkillSourceScanner` 并通过扩展点注册即可:
+
+```java
+public class SampleFileScanner implements SkillSourceScanner {
+    @Override public boolean isApplicable(ScanContext ctx) { /* 判断环境 */ return true; }
+    @Override public List<SkillJarSource> scan(ScanContext ctx) { /* 返回候选 jar 列表 */ return List.of(); }
+}
+```
+
+可以通过 `plugin.xml` 注册:
 
 ```xml
 <idea-plugin>
     <depends>dev.dong4j.idea.skillsjars.helper</depends>
-
     <extensions defaultExtensionNs="dev.dong4j.idea.skillsjars.helper">
-        <skillSourceScanner
-            implementation="com.example.MyGradleScanner"/>
+        <skillSourceScanner implementation="com.example.MyScanner"/>
     </extensions>
 </idea-plugin>
 ```
 
-`SkillSourceScanner` 的实现负责给出 `SkillJarSource` 流, 解析、合并、对外暴露的工作仍然由本插件协调层完成 —— 你只需要关心"在我的构建系统里, 哪些
-JAR 可能含 skill".
+或者如果您是基于构建系统脚本接入（伪代码）：
+
+**Gradle 接入示例**
+
+```kotlin
+// build.gradle.kts
+dependencies {
+    implementation("dev.dong4j:skillsjars-helper:2026.1")
+}
+
+extensions.configure<SkillSourceScanner>("skillSourceScanner") {
+    implementation("com.example.gradle.GradleSkillSourceScanner")
+}
+```
+
+**SBT 接入示例**
+
+`skillsjars-sbt-plugin` 作者可以基于此扩展点暴露 SBT Skills scope 依赖。
+
+`SkillSourceScanner` 的实现负责给出 `SkillJarSource` 流, 解析、合并、去重的工作由本插件协调层完成 —— 你只需要关心"在我的构建系统里, 哪些 JAR 可能含 skill"。
 
 > 完整 API 与扩展点契约见源码 `src/main/java/dev/dong4j/idea/skillsjars/helper/api/` 与 [`docs/design.md`](docs/design.md).
 
