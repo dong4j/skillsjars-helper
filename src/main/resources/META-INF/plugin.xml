@@ -64,6 +64,8 @@
     <extensions defaultExtensionNs="dev.dong4j.idea.skillsjars.helper">
         <skillSourceScanner
             implementation="dev.dong4j.idea.skillsjars.helper.scanner.MavenLibraryScanner"/>
+        <skillSourceScanner
+            implementation="dev.dong4j.idea.skillsjars.helper.scanner.SbtSkillSourceScanner"/>
     </extensions>
 
     <!-- 当前不注册任何 EditorPopupMenu / ProjectViewPopupMenu 级别的 Action;

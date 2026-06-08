@@ -32,6 +32,15 @@ class SkillCoordinateTest {
     }
 
     @Test
+    @DisplayName("可以从 IDEA SBT 库名解析坐标")
+    void should_parse_sbt_library_name() {
+        SkillCoordinate c = SkillCoordinate.fromLibraryName("sbt: dev.dong4j:zeka-skills:1.0.0:jar");
+        assertThat(c.getGroupId()).isEqualTo("dev.dong4j");
+        assertThat(c.getArtifactId()).isEqualTo("zeka-skills");
+        assertThat(c.getVersion()).isEqualTo("1.0.0");
+    }
+
+    @Test
     @DisplayName("空或不完整的库名返回 unknown")
     void should_return_unknown_when_invalid() {
         assertThat(SkillCoordinate.fromLibraryName(null).isComplete()).isFalse();
