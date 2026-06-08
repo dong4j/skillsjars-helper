@@ -30,6 +30,9 @@ public final class SkillCoordinate {
     /** IDEA Gradle 库名前缀. */
     private static final String GRADLE_PREFIX = "Gradle: ";
 
+    /** IDEA SBT 库名前缀. */
+    private static final String SBT_PREFIX = "sbt: ";
+
     /** Maven groupId, 可为 null. */
     @Nullable
     private final String groupId;
@@ -76,6 +79,8 @@ public final class SkillCoordinate {
             trimmed = trimmed.substring(MAVEN_PREFIX.length());
         } else if (trimmed.startsWith(GRADLE_PREFIX)) {
             trimmed = trimmed.substring(GRADLE_PREFIX.length());
+        } else if (trimmed.startsWith(SBT_PREFIX)) {
+            trimmed = trimmed.substring(SBT_PREFIX.length());
         }
 
         // groupId:artifactId:version 至少 3 段; 多余段 (如 type=jar / classifier) 忽略

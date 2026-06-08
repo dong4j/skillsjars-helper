@@ -186,6 +186,7 @@ final class SkillsTreeCellRenderer extends JBPanel<SkillsTreeCellRenderer> imple
             case MAVEN_DEPENDENCY -> "skill.source.maven";
             case MAVEN_PLUGIN_DEPENDENCY -> "skill.source.maven.plugin";
             case GRADLE_DEPENDENCY -> "skill.source.gradle";
+            case SBT_DEPENDENCY -> "skill.source.sbt";
             case PROJECT_OUTPUT -> "skill.source.project.output";
             case EXTERNAL_LIBRARY -> "skill.source.external.library";
             case LOCAL_JAR -> "skill.source.local.jar";

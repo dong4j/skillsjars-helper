@@ -34,6 +34,9 @@ public enum SkillSourceType {
     /** Gradle 普通依赖, 三期接入 (详见 docs/phase3-publish.md). */
     GRADLE_DEPENDENCY,
 
+    /** SBT 依赖. */
+    SBT_DEPENDENCY,
+
     /** 当前模块产物 (output / classes 目录). */
     PROJECT_OUTPUT,
 
