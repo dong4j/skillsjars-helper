@@ -38,13 +38,14 @@ intellijPlatform {
             create("IC", "2024.3")
             create("IC", "2025.1")
             create("IC", "2025.2")
-            create("IC", "2025.3")
+            // 2025.3 IC is unified into intellijIdea, configure properly later
+            // create("IC", "2025.3")
 
             create("IU", "2024.2")
             create("IU", "2024.3")
             create("IU", "2025.1")
             create("IU", "2025.2")
-            create("IU", "2025.3")
+            // create("IU", "2025.3")
         }
     }
 }
