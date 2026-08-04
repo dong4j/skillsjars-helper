@@ -27,8 +27,8 @@ intellijPlatform {
         ideaVersion {
             sinceBuild = providers.gradleProperty("platformSinceBuild")
             // https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-extension.html#intellijPlatform-pluginConfiguration-ideaVersion-untilBuild
-            // untilBuild = providers.gradleProperty("platformUntilBuild")
-            untilBuild = provider { null }
+            // 限定到已验证的 2026.2 分支，避免对尚未验证的未来 IDE 版本宣称兼容。
+            untilBuild = providers.gradleProperty("platformUntilBuild")
         }
     }
 
@@ -38,13 +38,14 @@ intellijPlatform {
             create("IC", "2024.3")
             create("IC", "2025.1")
             create("IC", "2025.2")
-            create("IC", "2025.3")
 
             create("IU", "2024.2")
             create("IU", "2024.3")
             create("IU", "2025.1")
             create("IU", "2025.2")
             create("IU", "2025.3")
+            create("IU", "2026.1")
+            create("IU", "2026.2.0.1")
         }
     }
 }
@@ -139,4 +140,3 @@ tasks {
         jvmArgs = listOf("-XX:+AllowEnhancedClassRedefinition")
     }
 }
-

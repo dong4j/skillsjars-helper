@@ -8,7 +8,7 @@
 **像管理 Maven 依赖一样, 在 JetBrains IDE 内管理 Agent Skills.**
 
 [![JetBrains Marketplace](https://img.shields.io/badge/JetBrains%20Marketplace-SkillsJars%20Helper-blue?logo=jetbrains)](https://plugins.jetbrains.com/vendor/9afaba35-91ea-4364-8ced-64db868dd23e)
-[![Platform](https://img.shields.io/badge/IDEA-2024.2%20--%202025.3-orange)](#兼容性)
+[![Platform](https://img.shields.io/badge/IDEA-2024.2%20--%202026.2-orange)](#兼容性)
 [![Java](https://img.shields.io/badge/Java-21-red?logo=openjdk)](#从源码构建)
 [![License](https://img.shields.io/badge/License-MIT-green)](#开源协议)
 
@@ -125,7 +125,7 @@ Gradle 仓库分发这些 skill, 让团队像管理普通依赖一样版本化�
 
 | 维度               | 范围                                                                      |
 |------------------|-------------------------------------------------------------------------|
-| **JetBrains 平台** | IntelliJ IDEA Community / Ultimate **2024.2 – 2025.3**                  |
+| **JetBrains 平台** | IntelliJ IDEA **2024.2 – 2026.2**                                      |
 | **构建工具**         | Maven 普通依赖 + `skillsjars-maven-plugin` 的 `<dependencies>`; Gradle 支持在路上 |
 | **运行环境**         | 与 IDE 自带 JBR 一致（Java 21 编译, 21 运行）                                      |
 
@@ -182,7 +182,7 @@ public class SampleFileScanner implements SkillSourceScanner {
 ```kotlin
 // build.gradle.kts
 dependencies {
-    implementation("dev.dong4j:skillsjars-helper:2026.1")
+    implementation("dev.dong4j:skillsjars-helper:2026.2.1000")
 }
 
 extensions.configure<SkillSourceScanner>("skillSourceScanner") {

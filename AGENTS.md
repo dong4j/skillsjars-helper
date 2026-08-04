@@ -9,7 +9,7 @@
 
 - **是什么**：JetBrains IDE 插件，把以 Maven artifact 形式分发的 Agent Skills（SkillsJars）变成 IDE 一等公民 —— 不解压 JAR 即可发现 / 预览 / 导出
   `SKILL.md`。
-- **技术栈**：Java 21 · IntelliJ Platform Gradle Plugin 2.16.0 · IDEA Community/Ultimate 2024.2 → 2025.3 · Lombok · JUnit 5 + Mockito +
+- **技术栈**：Java 21 · IntelliJ Platform Gradle Plugin 2.16.0 · IntelliJ IDEA 2024.2 → 2026.2 · Lombok · JUnit 5 + Mockito +
   AssertJ。
 - **当前阶段**：一期（扫描 + ToolWindow）、二期（导出 + manifest + 安装状态）**已完成并发布**；三期（发布前检查、Gradle 扫描器、`allowed-tools` 风险检查）
   **规划中**。

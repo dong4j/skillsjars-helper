@@ -6,7 +6,6 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileManager;
 
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.idea.maven.model.MavenId;
 import org.jetbrains.idea.maven.model.MavenPlugin;
 import org.jetbrains.idea.maven.project.MavenProject;
 import org.jetbrains.idea.maven.project.MavenProjectsManager;
@@ -32,7 +31,7 @@ import dev.dong4j.idea.skillsjars.helper.util.SkillsJarsHelperBundle;
  *
  * <p>注意: 该扫描器仅在 IDEA 启用了 Maven 插件时才会注册 (通过 plugin.xml 中
  * {@code <depends optional="true" config-file="skillsjars-maven.xml">org.jetbrains.idea.maven</depends>}
- * 控制), 因此不需要在运行时再做 ClassLoader 反射处理.</p>
+ * 控制). Maven 坐标对象在不同平台版本中由不同模块提供，因此只对坐标 getter 使用反射，避免把不稳定类型写入插件字节码签名.</p>
  *
  * <p>当前实现细节:</p>
  * <ul>
@@ -113,26 +112,28 @@ public final class MavenPluginDependencyScanner implements SkillSourceScanner {
                                    @NotNull Set<String> visited,
                                    @NotNull List<SkillJarSource> result,
                                    @NotNull ScanContext context) {
-        List<MavenId> dependencies = plugin.getDependencies();
+        List<?> dependencies = plugin.getDependencies();
         if (dependencies == null || dependencies.isEmpty()) {
             return;
         }
-        for (MavenId mavenId : dependencies) {
+        for (Object mavenId : dependencies) {
             context.checkCanceled();
             this.collectMavenId(mavenId, localRepo, visited, result);
         }
     }
 
     /**
-     * 把单个 {@link MavenId} 解析为本地 jar 文件并加入结果.
+     * 把单个 Maven 坐标对象解析为本地 jar 文件并加入结果.
+     * <p> 参数使用 {@link Object} 是为了兼容 IntelliJ Platform 2026.1 的 Maven 模块拆分，
+     * 避免生产字节码直接依赖该版本无法解析的 {@code MavenId} 类型.</p>
      */
-    private void collectMavenId(@NotNull MavenId mavenId,
+    private void collectMavenId(@NotNull Object mavenId,
                                 @NotNull File localRepo,
                                 @NotNull Set<String> visited,
                                 @NotNull List<SkillJarSource> result) {
-        String groupId = mavenId.getGroupId();
-        String artifactId = mavenId.getArtifactId();
-        String version = mavenId.getVersion();
+        String groupId = readCoordinatePart(mavenId, "getGroupId");
+        String artifactId = readCoordinatePart(mavenId, "getArtifactId");
+        String version = readCoordinatePart(mavenId, "getVersion");
         if (groupId == null || artifactId == null || version == null) {
             return;
         }
@@ -158,6 +159,26 @@ public final class MavenPluginDependencyScanner implements SkillSourceScanner {
             coordinate,
             coordinate.toCoordinateString()
         ));
+    }
+
+    /**
+     * 从 Maven 坐标对象读取指定字段
+     * <p> 仅在 Maven 插件已加载时调用；反射边界用于隔离 2026.1 的 Maven 模块类型变更，
+     * getter 名称在当前支持范围内保持稳定.</p>
+     *
+     * @param coordinate Maven 坐标对象
+     * @param getterName 坐标 getter 名称
+     * @return 字符串字段值；类型或方法不匹配时返回 null
+     */
+    @org.jetbrains.annotations.Nullable
+    private static String readCoordinatePart(@NotNull Object coordinate, @NotNull String getterName) {
+        try {
+            Object value = coordinate.getClass().getMethod(getterName).invoke(coordinate);
+            return value instanceof String text ? text : null;
+        } catch (ReflectiveOperationException e) {
+            LOG.debug("Unable to read Maven coordinate via " + getterName, e);
+            return null;
+        }
     }
 
     /**
